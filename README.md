@@ -1,6 +1,6 @@
 # iOLS_delta : This repository includes all available STATA programs  of iterated Ordinary Least Squares
 
-This repository includes code for iOLS_delta, i2SLS_delta, iOLS_MP as well as iOLS_HDFE and i2SLS_HDFE which allows for high-dimensional fixed effects. These programs rely on other programs : you will need to have them installed.
+This repository includes code for iOLS_delta, i2SLS_delta, iOLS_MP as well as iOLS_HDFE and i2SLS_HDFE which allows for high-dimensional fixed effects, as described in Bellego, Benatia and Pape (2021). These programs rely on other programs : you will need to have them installed.
 
 >ssc install hdfe
 
