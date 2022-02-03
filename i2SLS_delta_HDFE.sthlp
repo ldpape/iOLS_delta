@@ -86,7 +86,6 @@ or in BibTex :
 {marker examples}{...}
 {title:Examples}
 
-{pstd} We compare i2SLS_ivreg2 with IV-Poisson (using ivpois)
 {browse "http://www.haghish.com/statistics/stata-blog/stata-programming/download/ivpois.html":ivpois help file}.
 {p_end}
 {hline}
