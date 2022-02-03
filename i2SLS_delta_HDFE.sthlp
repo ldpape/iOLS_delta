@@ -51,7 +51,7 @@
 {synoptline}
 {syntab: Standard Errors: Classical/Robust/Clustered}
 {synopt:{opt vce}{cmd:(}{help i2SLS_delta_hdfe##opt_vce:vcetype}{cmd:)}}{it:vcetype}
-may be classical (assuming homoskedasticity), {opt r:obust}, or {opt cl:uster} (allowing two- and multi-way clustering){p_end}
+may be classical if unspecified (assuming homoskedasticity), {opt r:obust}, or vce({opt cl:uster} varlist) (allowing two- and multi-way clustering){p_end}
 {syntab: Delta}
 {synopt:{opt delta}{cmd:(}{help i2SLS_delta_hdfe##delta:delta}{cmd:)}}{it:delta} is any strictly positive constant. Set to 1 if unspecified. {p_end}
 {syntab: Convergence}
@@ -91,7 +91,7 @@ or in BibTex :
 {hline}
 {phang2}{cmd:. use "http://www.stata-press.com/data/r14/airline"}{p_end}
 {phang2}{cmd:. gen fixed_effect = _n<3}{p_end}
-{phang2}{cmd:. i2SLS_delta_hdfe injuries airline , endog(XYZowned) instr(n) , absorb(fixed_effect) delta(100) vce(robust)}{p_end}
+{phang2}{cmd:. i2SLS_delta_hdfe injuries airline , endog(XYZowned) instr(n) , absorb(fixed_effect) delta(100) robust }{p_end}
 {hline}
 
 
