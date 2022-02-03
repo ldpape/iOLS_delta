@@ -1,8 +1,13 @@
 ********************************************** unique.pkg
 v 1
-d iOLS_OLS 
-d Program to run small sample iOLS
-d Distribution-Date: 22 March 2021
-f iOLS_OLS.ado
-f iOLS_OLS_test.ado
-f iOLS_OLS.sthlp
+d iOLS_delta
+d Program to run iterated Ordinary Least Squares
+d Distribution-Date: 3 Feb 2022
+f iOLS_delta.ado
+f iOLS_delta_HDFE.ado
+f i2SLS_delta.ado
+f i2SLS_delta_HDFE.ado
+f iOLS_delta.sthlp
+f iOLS_delta_hdfe.sthlp
+f i2SLS_delta.sthlp
+f i2SLS_delta_hdfe.sthlp
