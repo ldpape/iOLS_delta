@@ -24,7 +24,7 @@
 
 {pstd}{cmd:Fixed-Effects:} This package takes a within-transformation to difference out high-dimensional fixed effects. To do so, it relies on the HDFE package developed by {browse "http://scorreia.com/research/hdfe.pdf": Sergio Correia (2017)}. In turn, the obtained standard errors will slightly differ from those obtained running the same model with iOLS_delta_hdfe. 
 
-{pstd}{cmd:Note:} This program automatically checks for the presence of seperation, which would preclude the existence of estimates, using the method proposed by {browse "https://arxiv.org/pdf/1903.01633.pdf":Correia, Guimarães, and Zylkin (2019)}. This results in dropping problematic observations.
+{pstd}{cmd:Note:} This program automatically checks for the presence of seperation, which would preclude the existence of estimates, using the method proposed by {browse "https://arxiv.org/pdf/1903.01633.pdf": Correia, Guimarães, and Zylkin (2019) }. This results in dropping problematic observations.
 
 {marker syntax}{...}
 {title:Syntax}
