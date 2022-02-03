@@ -164,14 +164,14 @@ mata: beta_initial = beta_new
 	cap drop _COPY
 	quietly: gen _COPY = `touse'
     ereturn post beta_final Sigma_tild , obs(`=e(N)') depname(`depvar') esample(`touse')  dof(`=e(df r)') 
-    cap drop iOLS_xb_hat
-	cap drop iOLS_error
+     cap drop iOLS_delta_xb
+	cap drop iOLS_delta_U
 	*quietly mata: st_addvar("double", "iOLS_xb_hat")
 	*mata: st_store(.,"iOLS_xb_hat",xb_hat)
 	*quietly mata: st_addvar("double", "iOLS_error")
 	*mata: st_store(.,"iOLS_error",ui)
-    	mata: st_store(., st_addvar("double", "iOLS_error"), "_COPY", ui)
-    	mata: st_store(., st_addvar("double", "iOLS_xb_hat"),"_COPY", xb_hat)
+    	mata: st_store(., st_addvar("double", "iOLS_delta_U"), "_COPY", ui)
+    	mata: st_store(., st_addvar("double", "iOLS_delta_xb"),"_COPY", xb_hat)
 		cap drop _COPY
 
 ereturn scalar delta = `delta'
