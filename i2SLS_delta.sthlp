@@ -22,7 +22,7 @@
 
 {pstd}{cmd:Introduction} This program implements iterated Two Stage Least Squares with delta, as described by {browse "https://papers.ssrn.com/sol3/papers.cfm?abstract_id=3444996":Bellego, Benatia, and Pape (2021)}. {cmd: i2SLS_delta} is a solution to the problem of the log of zero with endogenous covariates.  This method relies on running the "ivreg2" function iteratively. This provides the reader with the final IV estimates and allows the use the post-estimation commands available under regress (using Y_tilde = log(Y + delta*exp(xb))) as a dependent variable. Delta allows the user to assess several moment conditions to assess the robustness of the parameter estimates to moment specification. The program {cmd:i2SLS_delta_test} provide a test to assess how well each of these moments, which have implications in terms of the patter n of zeros in the data, compare to the pattern of zeros observed in the data.
 
-{pstd}{cmd:Note:} This program automatically checks for the presence of seperation, which would preclude the existence of estimates, using the method proposed by {browse "https://arxiv.org/pdf/1903.01633.pdf":Correia, Guimarães, and Zylkin (2019)}. This results in dropping problematic observations.
+{pstd}{cmd:Note:} This program automatically checks for the presence of seperation, which would preclude the existence of estimates, using the method proposed by {browse "https://arxiv.org/pdf/1903.01633.pdf":Correia, Guimaraes, and Zylkin (2019)}. This results in dropping problematic observations.
 
 
 {marker syntax}{...}
