@@ -9,8 +9,8 @@
 ** 01/02/2021 : Drop "preserve" to gain speed & postestimation
 ** 03/02/2021 : Check Singleton using Sergio Correia, Zylkin and Guimarães method.
 
-cap program drop iOLS_OLS
-program define iOLS_OLS, eclass 
+cap program drop iOLS_delta
+program define iOLS_delta, eclass 
 //	syntax [anything] [if] [in] [aweight pweight fweight iweight] [, DELta(real 1) Robust LIMit(real 0.00001) MAXimum(real 1000) CLuster(varlist numeric)]
 syntax varlist [if] [in] [aweight pweight fweight iweight] [, DELta(real 1) LIMit(real 1e-8)  MAXimum(real 10000) Robust CLuster(string)]        
 
