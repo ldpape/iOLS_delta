@@ -55,6 +55,8 @@ may be classical if unspecified (assuming homoskedasticity), {opt r:obust}, or v
 {syntab: Convergence}
 {synopt:{opt limit}{cmd:(}{help iOLS_delta_hdfe##limit:limit}{cmd:)}} Choose convergence criteria in terms of mean squared difference between two set of paramter estimates between two iterations. Set to 1e-8 if unspecified. {p_end}
 {synopt:{opt maximum}{cmd:(}{help iOLS_delta_hdfe##maximum:maximum}{cmd:)}} Maximum number of iterations. Set to 10,000 if unspecified. {p_end}
+{syntab: Starting Point}
+{synopt:{opt from}{cmd:(}{help i2SLS_delta##limit:limit}{cmd:)}} Indicate a matrix of parameters to use as a starting point (i.e, from ppml or ivreg2 with log(1+Y) for example). {p_end}
 
 {marker Post-Estimation}{...}
 {title:Post-Estimation}
