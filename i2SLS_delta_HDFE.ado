@@ -115,10 +115,20 @@ if r(k_omitted) >0 di
 	mata : st_view(Py_tilde,.,"Y0_","`touse'")
 	mata : st_view(y,.,"`depvar'","`touse'")	
 	}
-	* prepare  future inversions 
-	mata : invPzX = invsym(cross(PX,PZ)*invsym(cross(PZ,PZ))*cross(PZ,PX))*cross(PX,PZ)*invsym(cross(PZ,PZ))
+	
+	** initial value 
+		mata : invPzX = invsym(cross(PX,PZ)*invsym(cross(PZ,PZ))*cross(PZ,PX))*cross(PX,PZ)*invsym(cross(PZ,PZ))
+capture	 confirm matrix `from'
+if _rc==0 {
+	mata : beta_initial = st_matrix("`from'")
+	mata : beta_initial = beta_initial'
+}
+else {
 	mata : beta_initial = invPzX*cross(PZ,Py_tilde)
-	mata : beta_t_1 = beta_initial // needed to initialize
+}
+	* prepare  future inversions 
+	
+		mata : beta_t_1 = beta_initial // needed to initialize
 	mata : beta_t_2 = beta_initial // needed to initialize
 	mata : q_hat_m0 = 0
 	local k = 1
