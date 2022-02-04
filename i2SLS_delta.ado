@@ -6,11 +6,12 @@
 * 21/01 : symmetric S.E. + correction de syntax + check singleton de PPML
 * 02/02 : drop preserve for speed + memory gain, correction for 'touse', and post-estimates
 * 03/02 : drop singleton using Correia, Zylkin and Guimaraes method
+* 04/02 : warm starting point
 cap program drop i2SLS_ivreg2
 program define i2SLS_ivreg2, eclass
 //syntax anything(fv ts numeric) [if] [in] [aweight pweight fweight iweight]  [, DELta(real 1) LIMit(real 0.00001) MAXimum(real 1000) Robust CLuster(string)  ]
 
-syntax varlist [if] [in] [aweight pweight fweight iweight] [, DELta(real 1) endog(varlist) instr(varlist) LIMit(real 1e-8)  MAXimum(real 10000) Robust CLuster(string)]           
+syntax varlist [if] [in] [aweight pweight fweight iweight] [, DELta(real 1) from(name) endog(varlist) instr(varlist) LIMit(real 1e-8)  MAXimum(real 10000) Robust CLuster(string)]           
 
 marksample touse   
 markout `touse'  `cluster', s  
@@ -79,7 +80,16 @@ quietly: replace `touse'  = (`xb' <= 0) // & (`touse')
 	mata : st_view(y_tilde,.,"`y_tild'","`touse'")
 	mata : st_view(y,.,"`depvar'","`touse'")
 	mata : invPzX = invsym(cross(X,Z)*invsym(cross(Z,Z))*cross(Z,X))*cross(X,Z)*invsym(cross(Z,Z))
+	
+	** initial value 
+capture	 confirm matrix `from'
+if _rc==0 {
+	mata : beta_initial = st_matrix("`from'")
+	mata : beta_initial = beta_initial'
+}
+else {
 	mata : beta_initial = invPzX*cross(Z,y_tilde)
+}
 	mata : beta_t_1 = beta_initial // needed to initialize
 	mata : beta_t_2 = beta_initial // needed to initialize
 	mata : q_hat_m0 = 0
@@ -184,3 +194,4 @@ ereturn local vcetype `option'
 di in gr _col(55) "Number of obs = " in ye %8.0f e(N)
 ereturn display
 end
+
