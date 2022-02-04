@@ -7,8 +7,8 @@
 * 02/02 : drop preserve for speed + memory gain, correction for 'touse', and post-estimates
 * 03/02 : drop singleton using Correia, Zylkin and Guimaraes method
 * 04/02 : warm starting point
-cap program drop i2SLS_ivreg2
-program define i2SLS_ivreg2, eclass
+cap program drop i2SLS_delta
+program define i2SLS_delta, eclass
 //syntax anything(fv ts numeric) [if] [in] [aweight pweight fweight iweight]  [, DELta(real 1) LIMit(real 0.00001) MAXimum(real 1000) Robust CLuster(string)  ]
 
 syntax varlist [if] [in] [aweight pweight fweight iweight] [, DELta(real 1) from(name) endog(varlist) instr(varlist) LIMit(real 1e-8)  MAXimum(real 10000) Robust CLuster(string)]           
@@ -189,7 +189,7 @@ ereturn  scalar eps =   `eps'
 ereturn  scalar niter =  `k'
 ereturn scalar widstat = e(widstat)
 ereturn scalar arf = e(arf)
-ereturn local cmd "i2SLS_ivreg2"
+ereturn local cmd "i2SLS_delta"
 ereturn local vcetype `option'
 di in gr _col(55) "Number of obs = " in ye %8.0f e(N)
 ereturn display
