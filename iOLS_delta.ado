@@ -8,11 +8,12 @@
 ** 20/01/2021 : Corrected S.E. for symmetrization & Added PPML Singleton & Separation drop.
 ** 01/02/2021 : Drop "preserve" to gain speed & postestimation
 ** 03/02/2021 : Check Singleton using Sergio Correia, Zylkin and Guimarães method.
+** 04/02/2021 : Warm starting point modification
 
 cap program drop iOLS_delta
 program define iOLS_delta, eclass 
 //	syntax [anything] [if] [in] [aweight pweight fweight iweight] [, DELta(real 1) Robust LIMit(real 0.00001) MAXimum(real 1000) CLuster(varlist numeric)]
-syntax varlist [if] [in] [aweight pweight fweight iweight] [, DELta(real 1) LIMit(real 1e-8)  MAXimum(real 10000) Robust CLuster(string)]        
+syntax varlist [if] [in] [aweight pweight fweight iweight] [, DELta(real 1) LIMit(real 1e-8) from(name) MAXimum(real 10000) Robust CLuster(string)]        
 
 	marksample touse
 	markout `touse'  `cluster', s     
@@ -71,7 +72,16 @@ quietly: replace `touse'  = (`xb' <= 0) // & (`touse')
 	mata : st_view(y_tilde,.,"`y_tild'","`touse'")
 	mata : st_view(y,.,"`depvar'","`touse'")
 	mata : invXX = invsym(cross(X,X))
+** initial value 
+capture	 confirm matrix `from'
+if _rc==0 {
+	mata : beta_initial = st_matrix("`from'")
+	mata : beta_initial = beta_initial'
+}
+else {
 	mata : beta_initial = invXX*cross(X,y_tilde)
+}
+** initiate
 	mata : beta_t_1 = beta_initial // needed to initialize
 	mata : beta_t_2 = beta_initial // needed to initialize
 	mata : q_hat_m0 = 0
@@ -164,14 +174,14 @@ mata: beta_initial = beta_new
 	cap drop _COPY
 	quietly: gen _COPY = `touse'
     ereturn post beta_final Sigma_tild , obs(`=e(N)') depname(`depvar') esample(`touse')  dof(`=e(df r)') 
-     cap drop iOLS_delta_xb
-	cap drop iOLS_delta_U
+    cap drop iOLS_xb_hat
+	cap drop iOLS_error
 	*quietly mata: st_addvar("double", "iOLS_xb_hat")
 	*mata: st_store(.,"iOLS_xb_hat",xb_hat)
 	*quietly mata: st_addvar("double", "iOLS_error")
 	*mata: st_store(.,"iOLS_error",ui)
-    	mata: st_store(., st_addvar("double", "iOLS_delta_U"), "_COPY", ui)
-    	mata: st_store(., st_addvar("double", "iOLS_delta_xb"),"_COPY", xb_hat)
+    	mata: st_store(., st_addvar("double", "iOLS_error"), "_COPY", ui)
+    	mata: st_store(., st_addvar("double", "iOLS_xb_hat"),"_COPY", xb_hat)
 		cap drop _COPY
 
 ereturn scalar delta = `delta'
