@@ -5,9 +5,10 @@
 * 22/12/2021 : added convergence control (limit and maximum)
 * 04/01/2022 : added constant + checks for convergence
 * 01/02/2022 : drop preserve + post estimation variables
+* 04/02/2022 : warm starting point + Correia, Zylkin and Guimarares singleton check
 cap program drop iOLS_delta_HDFE
 program define iOLS_delta_HDFE, eclass 
-syntax varlist [if] [in] [aweight pweight fweight iweight] [, DELta(real 1) LIMit(real 1e-8)  MAXimum(real 10000) ABSorb(string)  Robust CLuster(string)]        
+syntax varlist [if] [in] [aweight pweight fweight iweight] [, DELta(real 1) LIMit(real 1e-8) from(name)  MAXimum(real 10000) ABSorb(string)  Robust CLuster(string)]        
 
 //	syntax [anything] [if] [in] [aweight pweight fweight iweight] [, DELta(real 1)  ABSorb(string) LIMit(real 0.00001) MAXimum(real 1000) Robust CLuster(varlist numeric)]
 	marksample touse
@@ -85,7 +86,16 @@ quietly:	replace `touse' = 1 if `new_sample'
 	mata : st_view(y,.,"`depvar'","`touse'")	
 	* prepare  future inversions 
 	mata : invPXPX = invsym(cross(PX,PX))
+	
+	** initial value 
+capture	 confirm matrix `from'
+if _rc==0 {
+	mata : beta_initial = st_matrix("`from'")
+	mata : beta_initial = beta_initial'
+}
+else {
 	mata : beta_initial = invPXPX*cross(PX,Py_tilde)
+}
 	mata : beta_t_1 = beta_initial // needed to initialize
 	mata : beta_t_2 = beta_initial // needed to initialize
 	mata : q_hat_m0 = 0
