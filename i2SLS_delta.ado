@@ -1,36 +1,36 @@
-** 28/06/2021 : Corrected error on Diagonal Matrix of Weights using "cross".
-** 14/12/2021 : Corrected convergence criteria with "( . )"
-** 14/12/2021 : Changed Convergence Criteria from Absolute change to Relative Change
-** 14/12/2021 : Added a quietly after "preserve" 
-** 14/12/2021 : Changed the constant calculation to avoid numerical log(0).
-** 21/12/2021 : Updated to matrix form for speed and options to control convergence.
-** 04/01/2021 : Add additional stopping criteria + return of the constant alpha.
-** 20/01/2021 : Corrected S.E. for symmetrization & Added PPML Singleton & Separation drop.
-** 01/02/2021 : Drop "preserve" to gain speed & postestimation
-** 03/02/2021 : Check Singleton using Sergio Correia, Zylkin and Guimarães method.
+* 16/12 : change constant calculation to avoid a log of 0 & change eps.
+* 19/12 change covariance matrix calculation for large data set
+* 19/12 : add correction when no covariate is included.
+* 21/12 : Manual iteration of 2SLS GMM + options to control nb iterations /convergence..
+* 04/01 : retour de la constante + check de convergence 
+* 21/01 : symmetric S.E. + correction de syntax + check singleton de PPML
+* 02/02 : drop preserve for speed + memory gain, correction for 'touse', and post-estimates
+* 03/02 : drop singleton using Correia, Zylkin and Guimaraes method
+cap program drop i2SLS_ivreg2
+program define i2SLS_ivreg2, eclass
+//syntax anything(fv ts numeric) [if] [in] [aweight pweight fweight iweight]  [, DELta(real 1) LIMit(real 0.00001) MAXimum(real 1000) Robust CLuster(string)  ]
 
-cap program drop iOLS_delta
-program define iOLS_delta, eclass 
-//	syntax [anything] [if] [in] [aweight pweight fweight iweight] [, DELta(real 1) Robust LIMit(real 0.00001) MAXimum(real 1000) CLuster(varlist numeric)]
-syntax varlist [if] [in] [aweight pweight fweight iweight] [, DELta(real 1) LIMit(real 1e-8) from(name) MAXimum(real 10000) Robust CLuster(string)]        
+syntax varlist [if] [in] [aweight pweight fweight iweight] [, DELta(real 1) endog(varlist) instr(varlist) LIMit(real 1e-8)  MAXimum(real 10000) Robust CLuster(string)]           
 
-	marksample touse
-	markout `touse'  `cluster', s     
-	*** prepare options 
+marksample touse   
+markout `touse'  `cluster', s  
+	
+	if "`gmm2s'" !="" {
+		local opt0 = "`gmm2s' "
+	}
 	if  "`robust'" !="" {
 		local opt1  = "`robust' "
 	}
 	if "`cluster'" !="" {
-		local opt2 = "vce(cluster `cluster') "
+		local opt2 = "cluster(`cluster') "
 	}
-	local option = "`opt1'`opt2'"
+	local option = "`opt0'`opt1'`opt2'"
+	*** Obtain lists of variables 
 	local list_var `varlist'
-	* get depvar and indepvar
 	gettoken depvar list_var : list_var
 	gettoken _rhs list_var : list_var, p("(")
-* check singleton 
-foreach var of varlist `depvar' `_rhs' {
-quietly: replace `touse' = 0 if missing(`var')	
+foreach var of varlist  `depvar' `_rhs' `endog' `instr'{
+quietly replace `touse' = 0 if missing(`var')	
 }
 loc tol = 1e-5
 tempvar u w xb
@@ -40,7 +40,7 @@ loc K = ceil(r(sum) / `tol' ^ 2)
 quietly: gen `w' = cond(`depvar', `K', 1)  if `touse'
 while 1 {
 	*qui reghdfe u [fw=w], absorb(id1 id2) resid(e)
-quietly:	reg `u' `_rhs' [fw=`w']  if `touse'
+quietly:	reg `u' `_rhs' `endog' [fw=`w']  if `touse'
 quietly:	predict double `xb'  if `touse', xb
 quietly:	replace `xb' = 0 if (abs(`xb') < `tol')&(`touse')
 
@@ -55,49 +55,49 @@ quietly:	drop `xb' `w'
 }
 *quielty: gen is_sep = `xb' > 0
 quietly: replace `touse'  = (`xb' <= 0) // & (`touse')
-	** drop collinear variables
+
+
+** drop collinear variables
 	tempvar cste
 	gen `cste' = 1
     _rmcoll `_rhs' `cste' if `touse', forcedrop 
-	local var_list `r(varlist)' 
-	*** prepare iOLS 
+	local var_list `endog' `r(varlist)' `cste'  
+	local instr_list `instr' `r(varlist)' `cste' 
+	local exogenous `r(varlist)'
+	*** Initialisation de la boucle
 	tempvar y_tild 
 	quietly gen `y_tild' = log(`depvar' + `delta') if `touse'
-	*** Initialisation de la boucle
+	** prepare 2SLS
+	*local var_list  `endog' `indepvar' `cste'
+	*local instr_list `instr' `indepvar' `cste'
 	mata : X=.
+	mata : Z=.
 	mata : y_tilde =.
 	mata : y =.
-	mata : st_view(X,.,"`var_list' `cste'","`touse'")
+	mata : st_view(X,.,"`var_list'","`touse'")
+	mata : st_view(Z,.,"`instr_list'","`touse'")
 	mata : st_view(y_tilde,.,"`y_tild'","`touse'")
 	mata : st_view(y,.,"`depvar'","`touse'")
-	mata : invXX = invsym(cross(X,X))
-** initial value 
-capture	 confirm matrix `from'
-if _rc==0 {
-	mata : beta_initial = st_matrix("`from'")
-	mata : beta_initial = beta_initial'
-}
-else {
-	mata : beta_initial = invXX*cross(X,y_tilde)
-}
-** initiate
+	mata : invPzX = invsym(cross(X,Z)*invsym(cross(Z,Z))*cross(Z,X))*cross(X,Z)*invsym(cross(Z,Z))
+	mata : beta_initial = invPzX*cross(Z,y_tilde)
 	mata : beta_t_1 = beta_initial // needed to initialize
 	mata : beta_t_2 = beta_initial // needed to initialize
 	mata : q_hat_m0 = 0
 	local k = 1
 	local eps = 1000	
 	mata: q_hat = J(`maximum', 1, .)
-	*** ItÃ©rations iOLS
+	*** Iterations iOLS
 	_dots 0
-	while ( (`k' < `maximum') & (`eps' > `limit') ) {
-	mata: alpha = log(mean(y:*exp(-X[.,1..(cols(X)-1)]*beta_initial[1..(cols(X)-1),1])))
-	mata : beta_initial[(cols(X)),1] = alpha
+	while ((`k' < `maximum') & (`eps' > `limit' )) {
+		* Nouveaux beta
+	mata: alpha = log(mean(y:*exp(-X[.,1..(cols(X)-1)]*beta_initial[1..(cols(X)-1),1]) ))
+	mata: beta_initial[(cols(X)),1] = alpha
 	mata: xb_hat = X*beta_initial
 		* Update d'un nouveau y_tild et regression avec le nouvel y_tild
 	mata: y_tilde = log(y + `delta'*exp(xb_hat)) :-mean(log(y + `delta'*exp(xb_hat))- xb_hat)
 		* 2SLS 
-	mata: beta_new = invXX*cross(X,y_tilde)
-		* Difference entre les anciens betas et les nouveaux betas
+	mata: beta_new = invPzX*cross(Z,y_tilde)
+		* DiffÃ©rence entre les anciens betas et les nouveaux betas
 	mata: criteria = mean(abs(beta_initial - beta_new):^(2))
 mata: st_numscalar("eps", criteria)
 mata: st_local("eps", strofreal(criteria))
@@ -137,34 +137,25 @@ mata: beta_initial = beta_new
 	local k = `k'+1
 	_dots `k' 0
 	}
-
 	*** Calcul de la bonne matrice de variance-covariance
-	* Calcul du "bon" residu
-	mata: alpha = log(mean(y:*exp(-X[.,1..(cols(X)-1)]*beta_initial[1..(cols(X)-1),1])))
-	mata : beta_initial[(cols(X)),1] = alpha
-	mata: xb_hat = X*beta_initial
-	mata : y_tilde = log(y + `delta'*exp(xb_hat)) :-mean(log(y + `delta'*exp(xb_hat)) - xb_hat) 
-	mata: ui = y:*exp(-xb_hat)
- 	* Retour en Stata 
-	cap drop `y_tild' 
-	*quietly mata: st_addvar("double", "`y_tild'")
-	*mata: st_store(.,"`y_tild'",y_tilde)
-	mata: st_store(., st_addvar("double", "`y_tild'"), "`touse'", y_tilde)
-	quietly: reg `y_tild' `var_list' [`weight'`exp'] if `touse', `option'
-	*cap drop xb_hat
-	*quietly predict xb_hat, xb
-	*cap drop ui
-	*quietly gen ui = `depvar'*exp(-xb_hat)
-	*mata : ui= st_data(.,"ui")
+	* Calcul du "bon" rÃ©sidu
+	mata: xb_hat = X*beta_new
+	mata : y_tilde = log(y + `delta'*exp(xb_hat)) :-mean(log(y + `delta'*exp(xb_hat)) - xb_hat)
+	mata : ui = y:*exp(-xb_hat)
 	mata: weight = ui:/(ui :+ `delta')
-	matrix beta_final = e(b)
+	* Retour en Stata 
+	cap drop `y_tild' 
+	mata: st_store(., st_addvar("double", "`y_tild'"), "`touse'", y_tilde)
+quietly: ivreg2 `y_tild' `exogenous' (`endog' = `instr') [`weight'`exp'] if `touse', `option' 
+	* Calcul de Sigma_0, de I-W, et de Sigma_tild
+	matrix beta_final = e(b) // 	mata: st_matrix("beta_final", beta_new)
 	matrix Sigma = e(V)
 	mata : Sigma_hat = st_matrix("Sigma")
-	mata : Sigma_0 = (quadcross(X,X))*Sigma_hat*(quadcross(X,X))
-	mata : invXpIWX = invsym(quadcross(X, weight, X))
-	mata : Sigma_tild = invXpIWX*Sigma_0*invXpIWX
+	mata : Sigma_0 = (cross(X,Z)*invsym(cross(Z,Z))*cross(Z,X):/rows(X))*Sigma_hat*(cross(X,Z)*invsym(cross(Z,Z))*cross(Z,X):/rows(X)) // recover original HAC 
+	mata : invXpPzIWX = invsym(0.5:/rows(X)*cross(X,Z)*invsym(cross(Z,Z))*cross(Z,weight,X)+ 0.5:/rows(X)*cross(X,weight,Z)*invsym(cross(Z,Z))*cross(Z,X))
+	mata : Sigma_tild = invXpPzIWX*Sigma_0*invXpPzIWX
 	mata : Sigma_tild = (Sigma_tild+Sigma_tild'):/2 
- 	mata: st_matrix("Sigma_tild", Sigma_tild)
+    	mata: st_matrix("Sigma_tild", Sigma_tild) // used in practice
 	*** Stocker les resultats dans une matrice
 	local names : colnames beta_final
 	local nbvar : word count `names'
@@ -172,23 +163,24 @@ mata: beta_initial = beta_new
     mat colnames Sigma_tild = `names' 
 	cap drop _COPY
 	quietly: gen _COPY = `touse'
-    ereturn post beta_final Sigma_tild , obs(`=e(N)') depname(`depvar') esample(`touse')  dof(`=e(df r)') 
-    cap drop iOLS_xb_hat
-	cap drop iOLS_error
+    ereturn post beta_final Sigma_tild , obs(`e(N)') depname(`depvar') esample(`touse')  dof(`=e(df r)') 
+	 cap drop i2SLS_xb_hat
+	cap drop i2SLS_error
 	*quietly mata: st_addvar("double", "iOLS_xb_hat")
 	*mata: st_store(.,"iOLS_xb_hat",xb_hat)
 	*quietly mata: st_addvar("double", "iOLS_error")
 	*mata: st_store(.,"iOLS_error",ui)
-    	mata: st_store(., st_addvar("double", "iOLS_error"), "_COPY", ui)
-    	mata: st_store(., st_addvar("double", "iOLS_xb_hat"),"_COPY", xb_hat)
+    	mata: st_store(., st_addvar("double", "i2SLS_error"), "_COPY", ui)
+    	mata: st_store(., st_addvar("double", "i2SLS_xb_hat"),"_COPY", xb_hat)
 		cap drop _COPY
 
 ereturn scalar delta = `delta'
 ereturn  scalar eps =   `eps'
 ereturn  scalar niter =  `k'
-ereturn local cmd "iOLS"
+ereturn scalar widstat = e(widstat)
+ereturn scalar arf = e(arf)
+ereturn local cmd "i2SLS_ivreg2"
 ereturn local vcetype `option'
 di in gr _col(55) "Number of obs = " in ye %8.0f e(N)
 ereturn display
 end
-
