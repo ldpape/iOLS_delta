@@ -157,7 +157,7 @@ mata: beta_initial = beta_new
 	*cap drop ui
 	*quietly gen ui = `depvar'*exp(-xb_hat)
 	*mata : ui= st_data(.,"ui")
-	scalar dof =  e(df r)
+	local dof `e(df r)'
 	mata: weight = ui:/(ui :+ `delta')
 	matrix beta_final = e(b)
 	matrix Sigma = e(V)
