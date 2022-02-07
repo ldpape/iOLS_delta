@@ -7,6 +7,7 @@
 * 02/02 : drop preserve for speed + memory gain, correction for 'touse', and post-estimates
 * 03/02 : drop singleton using Correia, Zylkin and Guimaraes method
 * 04/02 : warm starting point
+* 07/02 : degrees of freedom in ereturn
 cap program drop i2SLS_delta
 program define i2SLS_delta, eclass
 //syntax anything(fv ts numeric) [if] [in] [aweight pweight fweight iweight]  [, DELta(real 1) LIMit(real 0.00001) MAXimum(real 1000) Robust CLuster(string)  ]
@@ -158,6 +159,7 @@ mata: beta_initial = beta_new
 	mata: st_store(., st_addvar("double", "`y_tild'"), "`touse'", y_tilde)
 quietly: ivreg2 `y_tild' `exogenous' (`endog' = `instr') [`weight'`exp'] if `touse', `option' 
 	* Calcul de Sigma_0, de I-W, et de Sigma_tild
+	local dof `e(Fdf2)'
 	matrix beta_final = e(b) // 	mata: st_matrix("beta_final", beta_new)
 	matrix Sigma = e(V)
 	mata : Sigma_hat = st_matrix("Sigma")
@@ -173,7 +175,7 @@ quietly: ivreg2 `y_tild' `exogenous' (`endog' = `instr') [`weight'`exp'] if `tou
     mat colnames Sigma_tild = `names' 
 	cap drop _COPY
 	quietly: gen _COPY = `touse'
-    ereturn post beta_final Sigma_tild , obs(`e(N)') depname(`depvar') esample(`touse')  dof(`=e(df r)') 
+    ereturn post beta_final Sigma_tild , obs(`e(N)') depname(`depvar') esample(`touse')  dof(`=e(Fdf2)') 
 	 cap drop i2SLS_xb_hat
 	cap drop i2SLS_error
 	*quietly mata: st_addvar("double", "iOLS_xb_hat")
@@ -187,7 +189,8 @@ quietly: ivreg2 `y_tild' `exogenous' (`endog' = `instr') [`weight'`exp'] if `tou
 ereturn scalar delta = `delta'
 ereturn  scalar eps =   `eps'
 ereturn  scalar niter =  `k'
-ereturn scalar widstat = e(widstat)
+ereturn scalar widstat = e(widstat) 
+ereturn scalar df_r = dof
 ereturn scalar arf = e(arf)
 ereturn local cmd "i2SLS_delta"
 ereturn local vcetype `option'
