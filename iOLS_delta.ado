@@ -9,7 +9,7 @@
 ** 01/02/2021 : Drop "preserve" to gain speed & postestimation
 ** 03/02/2021 : Check Singleton using Sergio Correia, Zylkin and Guimarães method.
 ** 04/02/2021 : Warm starting point modification
-** 7/2/2021 : Return degrees of freedom.
+
 cap program drop iOLS_delta
 program define iOLS_delta, eclass 
 //	syntax [anything] [if] [in] [aweight pweight fweight iweight] [, DELta(real 1) Robust LIMit(real 0.00001) MAXimum(real 1000) CLuster(varlist numeric)]
@@ -157,6 +157,7 @@ mata: beta_initial = beta_new
 	*cap drop ui
 	*quietly gen ui = `depvar'*exp(-xb_hat)
 	*mata : ui= st_data(.,"ui")
+	scalar dof =  e(df r)
 	mata: weight = ui:/(ui :+ `delta')
 	matrix beta_final = e(b)
 	matrix Sigma = e(V)
@@ -187,7 +188,7 @@ mata: beta_initial = beta_new
 ereturn scalar delta = `delta'
 ereturn  scalar eps =   `eps'
 ereturn  scalar niter =  `k'
-ereturn scalar df_r = e(df r)
+ereturn scalar df_r = `dof'
 ereturn local cmd "iOLS"
 ereturn local vcetype `option'
 di in gr _col(55) "Number of obs = " in ye %8.0f e(N)
