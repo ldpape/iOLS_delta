@@ -28,7 +28,7 @@ if  "`xb_hat'" !="" {
 	local lambda = _b[`lambda']
 		}
 else {
-quietly:  iOLS_delta `varlist' if `touse' , delta(`delta') limit(`limit') from(`from') maximum(`maximum')         
+quietly:  i2SLS_delta `varlist' if `touse' , delta(`delta') limit(`limit') from(`from') maximum(`maximum') endog(`endog') instr(`instr')         
 	matrix beta_hat = e(b)
 	matrix var_cov_beta_hat = e(V)
 	* lhs of test
