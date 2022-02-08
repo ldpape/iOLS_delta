@@ -146,19 +146,12 @@ mata: beta_initial = beta_new
 	mata: xb_hat = X*beta_initial
 	mata : y_tilde = log(y + `delta'*exp(xb_hat)) :-mean(log(y + `delta'*exp(xb_hat)) - xb_hat) 
 	mata: ui = y:*exp(-xb_hat)
+	mata: weight = ui:/(ui :+ `delta')
  	* Retour en Stata 
 	cap drop `y_tild' 
-	*quietly mata: st_addvar("double", "`y_tild'")
-	*mata: st_store(.,"`y_tild'",y_tilde)
 	mata: st_store(., st_addvar("double", "`y_tild'"), "`touse'", y_tilde)
 	quietly: reg `y_tild' `var_list' [`weight'`exp'] if `touse', `option'
-	*cap drop xb_hat
-	*quietly predict xb_hat, xb
-	*cap drop ui
-	*quietly gen ui = `depvar'*exp(-xb_hat)
-	*mata : ui= st_data(.,"ui")
-	local dof `e(df r)'
-	mata: weight = ui:/(ui :+ `delta')
+	local dof `e(df_r)'
 	matrix beta_final = e(b)
 	matrix Sigma = e(V)
 	mata : Sigma_hat = st_matrix("Sigma")
@@ -174,21 +167,16 @@ mata: beta_initial = beta_new
     mat colnames Sigma_tild = `names' 
 	cap drop _COPY
 	quietly: gen _COPY = `touse'
-    ereturn post beta_final Sigma_tild , obs(`=e(N)') depname(`depvar') esample(`touse')  dof(`=e(df r)') 
+    ereturn post beta_final Sigma_tild , obs(`=e(N)') depname(`depvar') esample(`touse')  dof(`dof') 
     cap drop iOLS_xb_hat
 	cap drop iOLS_error
-	*quietly mata: st_addvar("double", "iOLS_xb_hat")
-	*mata: st_store(.,"iOLS_xb_hat",xb_hat)
-	*quietly mata: st_addvar("double", "iOLS_error")
-	*mata: st_store(.,"iOLS_error",ui)
     	mata: st_store(., st_addvar("double", "iOLS_error"), "_COPY", ui)
     	mata: st_store(., st_addvar("double", "iOLS_xb_hat"),"_COPY", xb_hat)
 		cap drop _COPY
-
 ereturn scalar delta = `delta'
 ereturn  scalar eps =   `eps'
 ereturn  scalar niter =  `k'
-ereturn scalar df_r = dof
+ereturn scalar df_r = `dof'
 ereturn local cmd "iOLS"
 ereturn local vcetype `option'
 di in gr _col(55) "Number of obs = " in ye %8.0f e(N)
