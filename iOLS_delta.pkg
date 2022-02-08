@@ -8,6 +8,7 @@ f iOLS_delta_HDFE.ado
 f i2SLS_delta.ado
 f i2SLS_delta_HDFE.ado
 f iOLS_MP.ado
+f i2SLS_MP.ado
 f iOLS_delta.sthlp
 f iOLS_delta_HDFE.sthlp
 f i2SLS_delta.sthlp
