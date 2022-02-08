@@ -86,7 +86,7 @@ else {
 	mata : beta_t_2 = beta_initial // needed to initialize
 	** initialize delta path
 	mata: scale_scalar = max(y:*exp(-X*beta_initial))
-	if `delta'==0{
+	if `delta'==1{
 	mata : delta= 0.01*scale_scalar // max((`delta', 0.5*scale_scalar ))
 	}
 	else{
@@ -157,19 +157,16 @@ mata: beta_initial = beta_new
 	mata: xb_hat = X*beta_initial
 	mata: y_tilde = log(y + delta*exp(xb_hat)) :- (log(delta :+ y:*exp(-xb_hat)) :- ((y:*exp(-xb_hat) :- 1):/(1:+delta)))
 	mata: ui = y:*exp(-xb_hat)
- 	* Retour en Stata 
+	mata: weight = ui:/(1 :+ delta)
+	* Retour en Stata 
 	cap drop `y_tild' 
 	*quietly mata: st_addvar("double", "`y_tild'")
 	*mata: st_store(.,"`y_tild'",y_tilde)
+	mata: st_numscalar("delta", delta)
+	mata: st_local("delta", strofreal(delta))
 	mata: st_store(., st_addvar("double", "`y_tild'"), "`touse'", y_tilde)
 	quietly: reg `y_tild' `var_list' [`weight'`exp'] if `touse', `option'
-	*cap drop xb_hat
-	*quietly predict xb_hat, xb
-	*cap drop ui
-	*quietly gen ui = `depvar'*exp(-xb_hat)
-	*mata : ui= st_data(.,"ui")
-	local dof `e(df r)'
-	mata: weight = ui:/(1 :+ delta)
+	local dof `e(df_r)'
 	matrix beta_final = e(b)
 	matrix Sigma = e(V)
 	mata : Sigma_hat = st_matrix("Sigma")
@@ -185,18 +182,16 @@ mata: beta_initial = beta_new
     mat colnames Sigma_tild = `names' 
 	cap drop _COPY
 	quietly: gen _COPY = `touse'
-    ereturn post beta_final Sigma_tild , obs(`=e(N)') depname(`depvar') esample(`touse')  dof(`=e(df r)') 
+    ereturn post beta_final Sigma_tild , obs(`=e(N)') depname(`depvar') esample(`touse')  dof(`=dof') 
     cap drop iOLS_MP_xb_hat
 	cap drop iOLS_MP_error
     	mata: st_store(., st_addvar("double", "iOLS_MP_error"), "_COPY", ui)
     	mata: st_store(., st_addvar("double", "iOLS_MP_xb_hat"),"_COPY", xb_hat)
 		cap drop _COPY
-mata: st_numscalar("delta", delta)
-mata: st_local("delta", strofreal(delta))
 ereturn scalar delta = `delta'
 ereturn  scalar eps =   `eps'
 ereturn  scalar niter =  `k'
-ereturn scalar df_r = dof
+ereturn scalar df_r = `dof'
 ereturn local cmd "iOLS_MP"
 ereturn local vcetype `option'
 di in gr _col(55) "Number of obs = " in ye %8.0f e(N)
