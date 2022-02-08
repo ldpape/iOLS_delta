@@ -175,22 +175,17 @@ quietly: ivreg2 `y_tild' `exogenous' (`endog' = `instr') [`weight'`exp'] if `tou
     mat colnames Sigma_tild = `names' 
 	cap drop _COPY
 	quietly: gen _COPY = `touse'
-    ereturn post beta_final Sigma_tild , obs(`e(N)') depname(`depvar') esample(`touse')  dof(`=e(Fdf2)') 
+    ereturn post beta_final Sigma_tild , obs(`e(N)') depname(`depvar') esample(`touse')  dof(`dof') 
 	 cap drop i2SLS_xb_hat
 	cap drop i2SLS_error
-	*quietly mata: st_addvar("double", "iOLS_xb_hat")
-	*mata: st_store(.,"iOLS_xb_hat",xb_hat)
-	*quietly mata: st_addvar("double", "iOLS_error")
-	*mata: st_store(.,"iOLS_error",ui)
     	mata: st_store(., st_addvar("double", "i2SLS_error"), "_COPY", ui)
     	mata: st_store(., st_addvar("double", "i2SLS_xb_hat"),"_COPY", xb_hat)
 		cap drop _COPY
-
 ereturn scalar delta = `delta'
 ereturn  scalar eps =   `eps'
 ereturn  scalar niter =  `k'
 ereturn scalar widstat = e(widstat) 
-ereturn scalar df_r = dof
+ereturn scalar df_r = `dof'
 ereturn scalar arf = e(arf)
 ereturn local cmd "i2SLS_delta"
 ereturn local vcetype `option'
