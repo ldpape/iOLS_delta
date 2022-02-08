@@ -17,4 +17,4 @@ f i2SLS_delta_test.ado
 f iOLS_MP_test.ado
 f ppml_test.ado
 f popular_fix_test.ado
-
+f popular_fix_iv_test
