@@ -14,3 +14,6 @@ f i2SLS_delta.sthlp
 f i2SLS_delta_HDFE.sthlp
 f iOLS_delta_test.ado
 f i2SLS_delta_test.ado
+f iOLS_MP_test.ado
+f ppml_test.ado
+
