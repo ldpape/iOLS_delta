@@ -182,7 +182,7 @@ mata: beta_initial = beta_new
     mat colnames Sigma_tild = `names' 
 	cap drop _COPY
 	quietly: gen _COPY = `touse'
-    ereturn post beta_final Sigma_tild , obs(`=e(N)') depname(`depvar') esample(`touse')  dof(`=dof') 
+    ereturn post beta_final Sigma_tild , obs(`=e(N)') depname(`depvar') esample(`touse')  dof(`dof') 
     cap drop iOLS_MP_xb_hat
 	cap drop iOLS_MP_error
     	mata: st_store(., st_addvar("double", "iOLS_MP_error"), "_COPY", ui)
