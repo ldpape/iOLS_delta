@@ -214,6 +214,9 @@ if "`alt_varlist'"=="" {
 quietly: ivreg2 Y0_ `alt_varlist' (`endog' = `instr') [`weight'`exp'] if `touse'  , `option' noconstant   // case with no X , only FE 
 }
 local df_r = e(Fdf2) - `df_a'
+ 	if "`cluster'" !="" {
+ local df_r = e(Fdf2)
+	}
 	foreach var in `alt_varlist' {      // rename variables back
 	quietly	rename `var' M0_`var'
 	quietly	rename TEMP_`var' `var'
