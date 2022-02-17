@@ -185,6 +185,9 @@ mata: weight = ui:/(ui :+ `delta')
 cap _crcslbl Y0_ `depvar'
  quietly: reg Y0_ `var_list'  if `touse' [`weight'`exp'], `option' noconstant 
  local df_r = e(df_r) - `df_a'
+  	if "`cluster'" !="" {
+ local df_r = e(df_r) 
+	}
  * Calcul du "bon" residu
 	matrix beta_final = e(b) // 
 	matrix Sigma = (e(df_r) / `df_r')*e(V)
