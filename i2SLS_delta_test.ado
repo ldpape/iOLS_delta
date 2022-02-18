@@ -51,6 +51,7 @@ quietly:  i2SLS_delta `varlist' if `touse' , delta(`delta') limit(`limit') from(
 	quietly: reg `lhs_temp' lambda_stat if `dep_pos' & `touse', nocons       
 	matrix b = e(b)
 	local lambda = _b[lambda_stat]	
+	cap drop lambda_stat
 		}
 ******************************************************************************
 *                   Return the information to STATA output		     		 *
