@@ -24,12 +24,12 @@ syntax varlist [if] [in] [aweight pweight fweight iweight] [, endog(varlist) ins
 	quietly: logit `dep_pos' `indepvar' `instr' if `touse'
 	tempvar p_hat_temp
     quietly: predict `p_hat_temp' if `touse', pr 
-    tempvar lambda
-    quietly: gen `lambda' = `xb_hat'*(1-`p_hat_temp')/`p_hat_temp' if `touse'
+    cap drop  lambda_stat
+    quietly: gen lambda_stat = `xb_hat'*(1-`p_hat_temp')/`p_hat_temp' if `touse'
 	* regress
-	quietly: reg `u_hat' `lambda' if `dep_pos' & `touse', nocons       
+	quietly: reg `u_hat' lambda_stat if `dep_pos' & `touse', nocons       
 	matrix b = e(b)
-	local lambda = _b[`lambda']	
+	local lambda = _b[lambda_stat]	
 
 ******************************************************************************
 *                   Return the information to STATA output		     		 *
