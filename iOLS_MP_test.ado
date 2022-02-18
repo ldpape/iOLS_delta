@@ -43,6 +43,7 @@ else {
 	quietly: reg iOLS_MP_error lambda_stat if `dep_pos' & `touse', nocons       
 	matrix b = e(b)
 	local lambda = _b[lambda_stat]	
+	cap drop lambda_stat
 		}
 ******************************************************************************
 *                   Return the information to STATA output		     		 *
