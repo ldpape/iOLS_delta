@@ -29,7 +29,7 @@ syntax varlist [if] [in] [aweight pweight fweight iweight]
 	quietly: reg u_hat lambda_stat if `dep_pos' & `touse', nocons       
 	matrix b = e(b)
 	local lambda = _b[lambda_stat]	
-
+cap drop lambda_stat
 ******************************************************************************
 *                   Return the information to STATA output		     		 *
 ******************************************************************************
