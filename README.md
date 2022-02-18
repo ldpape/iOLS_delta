@@ -12,6 +12,10 @@ This repository includes code for iOLS_delta, i2SLS_delta, iOLS_MP as well as iO
 
 >ssc install ftools
 
+>ssc install ppml
+
+>ssc install ppmlhdfe 
+
 >ssc install ranktest
 
 To install this code into Stata, run the following (requires at least Stata 14) : 
