@@ -26,10 +26,10 @@ syntax varlist [if] [in] [aweight pweight fweight iweight]
     cap drop lambda_stat
     quietly: gen lambda_stat = xb_hat*(1-`p_hat_temp')/`p_hat_temp' if `touse'
 	* regress
-	quietly: reg u_hat lambda_statif `dep_pos' & `touse', nocons       
+	quietly: reg u_hat lambda_stat if `dep_pos' & `touse', nocons       
 	matrix b = e(b)
 	local lambda = _b[lambda_stat]	
-
+	cap drop lambda_stat
 ******************************************************************************
 *                   Return the information to STATA output		     		 *
 ******************************************************************************
