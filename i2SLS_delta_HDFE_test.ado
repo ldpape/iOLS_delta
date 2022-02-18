@@ -43,7 +43,7 @@ quietly:	xi: logit `dep_pos' `indepvar' `instr' `vlist1' if `touse'
 	quietly: reg `lhs_temp' lambda_stat if `dep_pos' & `touse', nocons       
 	matrix b = e(b)
 	local lambda = _b[lambda_stat]	
-		
+	cap drop lambda_stat	
 ******************************************************************************
 *                   Return the information to STATA output		     		 *
 ******************************************************************************
