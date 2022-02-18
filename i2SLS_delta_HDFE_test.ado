@@ -37,12 +37,12 @@ quietly:	xi: logit `dep_pos' `indepvar' `instr' `vlist1' if `touse'
 		quietly: predict `p_hat_temp' if `touse', xbd
 	}
 
-    tempvar lambda
-    quietly: gen `lambda' = (`c_hat_temp'-log(`delta'))/`p_hat_temp' if `touse'
+    cap drop lambda_stat
+    quietly: gen lambda_stat = (`c_hat_temp'-log(`delta'))/`p_hat_temp' if `touse'
 	* regress
-	quietly: reg `lhs_temp' `lambda' if `dep_pos' & `touse', nocons       
+	quietly: reg `lhs_temp' lambda_stat if `dep_pos' & `touse', nocons       
 	matrix b = e(b)
-	local lambda = _b[`lambda']	
+	local lambda = _b[lambda_stat]	
 		
 ******************************************************************************
 *                   Return the information to STATA output		     		 *
