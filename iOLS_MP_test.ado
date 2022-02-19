@@ -14,7 +14,7 @@ quietly: gen `lhs_temp' = `u_hat'
      }
 else {
   quietly: iOLS_MP `varlist' if `touse' , delta(`delta') limit(`limit') from(`from') maximum(`maximum')   
-  	replace `touse' = e(sample)
+  quietly: replace `touse' = e(sample)
 	matrix beta_hat = e(b)
 	matrix var_cov_beta_hat = e(V)
 	* rhs of test
