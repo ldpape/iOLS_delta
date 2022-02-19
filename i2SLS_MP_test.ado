@@ -30,6 +30,7 @@ else {
 tempvar dep_pos
 quietly: gen `dep_pos' = `depvar'>0 if `touse'
  if  "`nonparametric'" =="" {
+di in red "Using Logit Probability Model"
 quietly: logit `dep_pos' `indepvar' `instr' if `touse'
 tempvar p_hat_temp
 quietly:predict `p_hat_temp' if `touse', pr 
@@ -40,7 +41,7 @@ quietly: reg i2SLS_MP_error lambda_stat if `dep_pos' & `touse', nocons
 	else{
 	di in red "Using Royston & Cox (2005) multivariate nearest-neighbor smoother"
 tempvar p_hat_temp
-quietly: mrunning  `dep_pos'   `indepvar' , nograph predict(`p_hat_temp')
+quietly: mrunning  `dep_pos'   `indepvar' `instr'  if `touse' , nograph predict(`p_hat_temp')
 quietly: _pctile `p_hat_temp', p(2.5)
 local w1=r(r1)
 quietly: _pctile `p_hat_temp', p(97.5)
