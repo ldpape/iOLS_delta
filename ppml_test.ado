@@ -9,7 +9,7 @@ syntax varlist [if] [in] [aweight pweight fweight iweight] [, NONparametric]
 	quietly: ppml `varlist' if `touse'    
 	matrix beta_hat = e(b)
 	matrix var_cov_beta_hat = e(V)
-	replace `touse' = e(sample)
+	quietly: replace `touse' = e(sample)
 	tempvar xb_hat u_hat
 	quietly: predict `xb_hat', xb
 	quietly : gen `u_hat' = `depvar'*exp(-`xb_hat')
