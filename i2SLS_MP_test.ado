@@ -13,6 +13,8 @@ if  "`xb_hat'" !="" {
 	* rhs of test 
 	tempvar E_u_hat
      quietly: egen `E_u_hat' = mean(`u_hat') if `touse'
+     tempvar lhs 
+     quietly: gen `lhs' = `u_hat'
 		}
 else {
  i2SLS_MP `varlist' if `touse' , delta(`delta') limit(`limit') from(`from') maximum(`maximum')  endog(`endog') instr(`instr')
@@ -23,6 +25,8 @@ else {
 	* rhs of test
 	tempvar E_u_hat
     quietly: egen `E_u_hat' = mean(i2SLS_MP_error) if `touse'
+       tempvar lhs 
+     quietly: gen `lhs' = i2SLS_MP_error
    }
 ******************************************************************************
 *                            PROBABILITY MODEL 	            	     		 *
@@ -36,7 +40,7 @@ tempvar p_hat_temp
 quietly:predict `p_hat_temp' if `touse', pr 
 cap drop lambda_stat
 quietly: gen lambda_stat = (`E_u_hat')/`p_hat_temp' if `touse'
-quietly: reg i2SLS_MP_error lambda_stat if `dep_pos' & `touse', nocons 
+quietly: reg  `lhs' lambda_stat if `dep_pos' & `touse', nocons 
 	}
 	else{
 	di in red "Using Royston & Cox (2005) multivariate nearest-neighbor smoother"
@@ -48,7 +52,7 @@ quietly: _pctile `p_hat_temp', p(97.5)
 local w2=r(r2) 
 cap drop lambda_stat
 quietly: gen lambda_stat = (`E_u_hat')/`p_hat_temp' if `touse'
-quietly: reg i2SLS_MP_error lambda_stat if `dep_pos' & `touse' & inrange(`p_hat_temp',`w1',`w2') , nocons       	
+quietly: reg  `lhs' lambda_stat if `dep_pos' & `touse' & inrange(`p_hat_temp',`w1',`w2') , nocons       	
 	}	
 matrix b = e(b)
 local lambda = _b[lambda_stat]	
