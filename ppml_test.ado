@@ -18,7 +18,7 @@ syntax varlist [if] [in] [aweight pweight fweight iweight] [, NONparametric]
 	quietly: gen `dep_pos' = `depvar'>0 if `touse'
 	* rhs of test
 tempvar E_u_hat
-quietly: egen `E_u_hat' = mean(u_hat) if `touse'
+quietly: egen `E_u_hat' = mean(`u_hat') if `touse'
 
 
 ******************************************************************************
