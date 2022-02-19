@@ -14,9 +14,12 @@ syntax varlist [if] [in] [aweight pweight fweight iweight] [, NONparametric  end
 	quietly: predict `xb_hat' if `touse', xb
 	tempvar res
 	quietly: gen `res' = log(`fix'+`depvar') if `touse'
-	quietly: reg `res' `indepvar' if `touse'    
+	quietly: ivreg2 `res' `indepvar' ( `endog' = `instr' )  if `touse'    
 	matrix beta_hat = e(b)
 	matrix var_cov_beta_hat = e(V)
+	replace `endog' = `instr'
+	tempvar xb2s 
+	predict `xb2s' if `touse' , xb 
 	quietly: replace `touse' = e(sample)
 	tempvar u_hat
 	quietly : predict `u_hat' if `touse', resid 
@@ -24,26 +27,25 @@ syntax varlist [if] [in] [aweight pweight fweight iweight] [, NONparametric  end
 ******************************************************************************
 *                            PROBABILITY MODEL 	            	     		 *
 ******************************************************************************
-	tempvar dep_pos
-	quietly: gen `dep_pos' = `depvar'>0 if `touse'
  if  "`nonparametric'" =="" {
+di in red "Using Logit Probability Model"
 quietly: logit `dep_pos' `indepvar' `instr' if `touse'
 tempvar p_hat_temp
 quietly:predict `p_hat_temp' if `touse', pr 
-    cap drop  lambda_stat
-    quietly: gen lambda_stat = `xb_hat'*(1-`p_hat_temp')/`p_hat_temp' if `touse'
+cap drop  lambda_stat
+quietly: gen lambda_stat = `xb2s'*(1-`p_hat_temp')/`p_hat_temp' if `touse'
 quietly: reg `u_hat' lambda_stat if `dep_pos' & `touse', nocons 
 	}
 	else{
-	di in red "Using Royston & Cox (2005) multivariate nearest-neighbor smoother"
+di in red "Using Royston & Cox (2005) multivariate nearest-neighbor smoother"
 tempvar p_hat_temp
 quietly: mrunning  `dep_pos'   `indepvar' `instr' if `touse' , nograph predict(`p_hat_temp')
 quietly: _pctile `p_hat_temp', p(2.5)
 local w1=r(r1)
 quietly: _pctile `p_hat_temp', p(97.5)
 local w2=r(r2) 
-    cap drop  lambda_stat
-    quietly: gen lambda_stat = `xb_hat'*(1-`p_hat_temp')/`p_hat_temp' if `touse'
+cap drop  lambda_stat
+quietly: gen lambda_stat = `xb2s'*(1-`p_hat_temp')/`p_hat_temp' if `touse'
 quietly: reg `u_hat' lambda_stat if `dep_pos' & `touse' & inrange(`p_hat_temp',`w1',`w2') , nocons       	
 	}      
 	matrix b = e(b)
