@@ -1,6 +1,6 @@
 cap program drop i2SLS_delta_test
 program define i2SLS_delta_test, eclass 
-syntax varlist [if] [in] [aweight pweight fweight iweight] [, DELta(real 1) LIMit(real 1e-8) from(name) endog(varlist) instr(varlist) xb_hat(varlist) u_hat(varlist)  MAXimum(real 10000) ]   
+syntax varlist [if] [in] [aweight pweight fweight iweight] [, DELta(real 1) NONparametric LIMit(real 1e-8) from(name) endog(varlist) instr(varlist) xb_hat(varlist) u_hat(varlist)  MAXimum(real 10000) ]   
 	marksample touse
 	local list_var `varlist'
 	* get depvar and indepvar
