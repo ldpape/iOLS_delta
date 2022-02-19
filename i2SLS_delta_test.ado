@@ -1,15 +1,12 @@
 cap program drop i2SLS_delta_test
 program define i2SLS_delta_test, eclass 
-syntax varlist [if] [in] [aweight pweight fweight iweight] [, DELta(real 1) LIMit(real 1e-8) from(name) endog(varlist) instr(varlist) xb_hat(varlist) u_hat(varlist)  MAXimum(real 10000) Robust CLuster(string)]   
+syntax varlist [if] [in] [aweight pweight fweight iweight] [, DELta(real 1) LIMit(real 1e-8) from(name) endog(varlist) instr(varlist) xb_hat(varlist) u_hat(varlist)  MAXimum(real 10000) ]   
 	marksample touse
 	local list_var `varlist'
 	* get depvar and indepvar
 	gettoken depvar list_var : list_var
 	gettoken indepvar list_var : list_var, p("(")
 if  "`xb_hat'" !="" {
-	* lhs of test
-	tempvar dep_pos
-	quietly:gen `dep_pos' = `depvar'>0 if `touse'
 	tempvar lhs_temp
     quietly: gen `lhs_temp' = log(`delta'+`u_hat') - log(`delta') if `touse'
 	* rhs of test
@@ -17,42 +14,49 @@ if  "`xb_hat'" !="" {
     quietly: gen `temp' = log(`depvar' + `delta'*exp(`xb_hat')) - `xb_hat' if `touse'
 	tempvar c_hat_temp
      quietly: egen `c_hat_temp' = mean(`temp') if `touse'
-	 quietly: logit `dep_pos' `indepvar' `instr' if `touse'
-	tempvar p_hat_temp
-    quietly:predict `p_hat_temp' if `touse', pr 
-    tempvar lambda
-    quietly: gen `lambda' = (`c_hat_temp'-log(`delta'))/`p_hat_temp' if `touse'
-	* regress
-	quietly: reg `lhs_temp' `lambda' if `dep_pos' & `touse', nocons 
-	matrix b = e(b)
-	local lambda = _b[`lambda']
 		}
 else {
 quietly:  i2SLS_delta `varlist' if `touse' , delta(`delta') limit(`limit') from(`from') maximum(`maximum') endog(`endog') instr(`instr') 
 	replace `touse' = e(sample)
 	matrix beta_hat = e(b)
 	matrix var_cov_beta_hat = e(V)
-	* lhs of test
-	tempvar dep_pos
-	quietly: gen `dep_pos' = `depvar'>0 if `touse'
-	tempvar lhs_temp
-    quietly: gen `lhs_temp' = log(`delta'+i2SLS_error) - log(`delta') if `touse'
+tempvar lhs_temp
+quietly: gen `lhs_temp' = log(`delta'+i2SLS_error) - log(`delta') if `touse'
 	* rhs of test
-	tempvar temp 
-    quietly: gen `temp' = log(`depvar' + `delta'*exp(i2SLS_xb_hat)) - i2SLS_xb_hat if `touse'
-	tempvar c_hat_temp
-    quietly: egen `c_hat_temp' = mean(`temp') if `touse'
-	quietly: logit `dep_pos' `indepvar' `instr' if `touse'
-	tempvar p_hat_temp
-    quietly: predict `p_hat_temp' if `touse', pr 
-    cap drop lambda_stat
-    quietly: gen lambda_stat = (`c_hat_temp'-log(`delta'))/`p_hat_temp' if `touse'
-	* regress
-	quietly: reg `lhs_temp' lambda_stat if `dep_pos' & `touse', nocons       
+tempvar temp 
+quietly: gen `temp' = log(`depvar' + `delta'*exp(i2SLS_xb_hat)) - i2SLS_xb_hat if `touse'
+tempvar c_hat_temp
+quietly: egen `c_hat_temp' = mean(`temp') if `touse'
+}
+******************************************************************************
+*                            PROBABILITY MODEL 	            	     	     *
+******************************************************************************
+tempvar dep_pos
+quietly:gen `dep_pos' = `depvar'>0 if `touse'	
+ if  "`nonparametric'" =="" {
+di in red "Using Logit Probability Model"
+quietly: logit `dep_pos' `indepvar'  `instr' if `touse'
+tempvar p_hat_temp
+quietly:predict `p_hat_temp' if `touse', pr 
+cap drop lambda_stat
+quietly: gen lambda_stat = (`c_hat_temp'-log(`delta'))/`p_hat_temp' if `touse'
+quietly: reg `lhs_temp' lambda_stat if `dep_pos' & `touse', nocons 
+	}
+	else {
+di in red "Using Royston & Cox (2005) multivariate nearest-neighbor smoother"
+tempvar p_hat_temp
+quietly: mrunning  `dep_pos'   `indepvar'  `instr' if `touse', nograph predict(`p_hat_temp')
+quietly: _pctile `p_hat_temp', p(2.5)
+local w1=r(r1)
+quietly: _pctile `p_hat_temp', p(97.5)
+local w2=r(r2) 
+cap drop lambda_stat
+quietly: gen lambda_stat = (`c_hat_temp'-log(`delta'))/`p_hat_temp' if `touse'
+quietly: reg `lhs_temp' lambda_stat if `dep_pos' & `touse' & inrange(`p_hat_temp',`w1',`w2') , nocons       	
+	}	
 	matrix b = e(b)
 	local lambda = _b[lambda_stat]	
 	cap drop lambda_stat
-		}
 ******************************************************************************
 *                   Return the information to STATA output		     		 *
 ******************************************************************************
