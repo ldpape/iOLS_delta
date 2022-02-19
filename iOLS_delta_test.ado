@@ -1,6 +1,6 @@
 cap program drop iOLS_delta_test
 program define iOLS_delta_test, eclass 
-syntax varlist [if] [in] [aweight pweight fweight iweight] [, DELta(real 1) LIMit(real 1e-8) from(name)  xb_hat(varlist) u_hat(varlist)  MAXimum(real 10000) Robust CLuster(string)]   
+syntax varlist [if] [in] [aweight pweight fweight iweight] [, DELta(real 1) LIMit(real 1e-8) from(name)  xb_hat(varlist) u_hat(varlist)  MAXimum(real 10000) NONparametric]   
 	marksample touse
 	local list_var `varlist'
 	* get depvar and indepvar
@@ -17,19 +17,10 @@ if  "`xb_hat'" !="" {
     quietly: gen `temp' = log(`depvar' + `delta'*exp(`xb_hat')) - `xb_hat' if `touse'
 	tempvar c_hat_temp
      quietly: egen `c_hat_temp' = mean(`temp') if `touse'
-	 quietly: logit `dep_pos' `indepvar' if `touse'
-	tempvar p_hat_temp
-    quietly:predict `p_hat_temp' if `touse', pr 
-    tempvar lambda
-    quietly: gen `lambda' = (`c_hat_temp'-log(`delta'))/`p_hat_temp' if `touse'
-	* regress
-	quietly: reg `lhs_temp' `lambda' if `dep_pos' & `touse', nocons 
-	matrix b = e(b)
-	local lambda = _b[`lambda']
-		}
+}
 else {
 quietly:  iOLS_delta `varlist' if `touse' , delta(`delta') limit(`limit') from(`from') maximum(`maximum')  
-	replace `touse' = e(sample)
+	quietly: replace `touse' = e(sample)
 	matrix beta_hat = e(b)
 	matrix var_cov_beta_hat = e(V)
 	* lhs of test
@@ -42,17 +33,35 @@ quietly:  iOLS_delta `varlist' if `touse' , delta(`delta') limit(`limit') from(`
     quietly: gen `temp' = log(`depvar' + `delta'*exp(iOLS_xb_hat)) - iOLS_xb_hat if `touse'
 	tempvar c_hat_temp
     quietly: egen `c_hat_temp' = mean(`temp') if `touse'
-	quietly: logit `dep_pos' `indepvar' if `touse'
-	tempvar p_hat_temp
-    quietly: predict `p_hat_temp' if `touse', pr 
-    cap drop lambda_stat
-    quietly: gen lambda_stat = (`c_hat_temp'-log(`delta'))/`p_hat_temp' if `touse'
-	* regress
-	quietly: reg `lhs_temp' lambda_stat if `dep_pos' & `touse', nocons       
-	matrix b = e(b)
-	local lambda = _b[lambda_stat]	
-	cap drop lambda_stat
-		}
+}
+
+******************************************************************************
+*                            PROBABILITY MODEL 	            	     		 *
+******************************************************************************
+ if  "`nonparametric'" =="" {
+quietly: logit `dep_pos' `indepvar' if `touse'
+tempvar p_hat_temp
+quietly:predict `p_hat_temp' if `touse', pr 
+cap drop lambda_stat
+quietly: gen lambda_stat = (`c_hat_temp'-log(`delta'))/`p_hat_temp' if `touse'
+quietly: reg `lhs_temp' lambda_stat if `dep_pos' & `touse', nocons 
+	}
+	else{
+	di in red "Using Royston & Cox (2005) multivariate nearest-neighbor smoother"
+tempvar p_hat_temp
+quietly: mrunning  `dep_pos'   `indepvar' , nograph predict(`p_hat_temp')
+quietly: _pctile `p_hat_temp', p(2.5)
+local w1=r(r1)
+quietly: _pctile `p_hat_temp', p(97.5)
+local w2=r(r2) 
+cap drop lambda_stat
+quietly: gen lambda_stat = (`c_hat_temp'-log(`delta'))/`p_hat_temp' if `touse'
+quietly: reg `lhs_temp' lambda_stat if `dep_pos' & `touse' & inrange(`p_hat_temp',`w1',`w2') , nocons       	
+	}
+matrix b = e(b)
+local lambda = _b[lambda_stat]
+cap drop lambda_stat
+	
 ******************************************************************************
 *                   Return the information to STATA output		     		 *
 ******************************************************************************
