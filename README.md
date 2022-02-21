@@ -27,6 +27,10 @@ To install this code into Stata, run the following (requires at least Stata 14) 
 
 >net install iOLS_delta, from("https://raw.githubusercontent.com/ldpape/iOLS_delta/master/")
 
+This installation provides the following estimation programs : iOLS_delta, iOLS_delta_HDFE (iOLS_delta with many fixed effects) , iOLS_MP (Multiplicative Poisson estimated by iOLS), as well as i2SLS_delta, i2SLS_delta_HDFE (i2SLS_delta with many fixed effects), i2SLS_MP (Multiplicative Poisson estimated by iOLS). 
+
+These estimation programs are complemented by testing programs : iOLS_delta_test, iOLS_delta_HDFE_test, iOLS_MP_test, i2SLS_delta_test, i2SLS_delta_HDFE_test, i2SLS_MP_test, as well as ppml_test, ppmlhdfe_test, popular_fix_test, and popular_fix_iv_test. 
+
 Please feel free to contact me to report a bug or ask a question. 
 
 Note, this code is provided as is and may include potential errors.  It has been tested as for Stata version 16.
