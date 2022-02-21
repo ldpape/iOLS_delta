@@ -109,7 +109,7 @@ to study the effect of cost of transportation (tcost).  Note that iOLS_delta is 
 {title:Stored results}
 
 {pstd}
-{cmd:iOLS_delta} stores the following in {cmd:e()}:
+{cmd:iOLS_delta_test} stores the following in {cmd:e()}:
 
 {synoptset 24 tabbed}{...}
 {syntab:Scalars}
