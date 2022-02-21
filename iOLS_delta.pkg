@@ -20,6 +20,7 @@ f iOLS_delta_HDFE_test.sthlp
 f i2SLS_delta_test.ado
 f i2SLS_delta_HDFE_test.ado
 f iOLS_MP_test.ado
+f iOLS_MP_test.sthlp
 f i2SLS_MP_test.ado
 f ppml_test.ado
 f ppmlhdfe_test.ado
