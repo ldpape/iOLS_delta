@@ -20,6 +20,8 @@ syntax varlist [if] [in] [aweight pweight fweight iweight] [,  from(name) absorb
 	tempvar dep_pos
 	quietly: gen `dep_pos' = `depvar'>0 if `touse'
 	* rhs of test
+	tempvar lhs
+quietly: gen `lhs' = `u_hat_temp'/exp(`xb_hat')
 
 	if  "`logit'" =="logit" {
 local vlist1
@@ -39,7 +41,7 @@ quietly:	xi: logit `dep_pos' `indepvar' `vlist1' if `touse'
     cap drop lambda_stat
     quietly: gen lambda_stat = (`E_u_hat')/`p_hat_temp' if `touse'
 	* regress
-	quietly: reg `u_hat_temp' lambda_stat if `dep_pos' & `touse', nocons       
+	quietly: reg `lhs' lambda_stat if `dep_pos' & `touse', nocons       
 	matrix b = e(b)
 	local lambda = _b[lambda_stat]	
 		cap drop lambda_stat
