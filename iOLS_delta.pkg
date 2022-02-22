@@ -26,6 +26,8 @@ f iOLS_MP_test.sthlp
 f i2SLS_MP_test.ado
 f i2SLS_MP_test.sthlp
 f ppml_test.ado
+f ppml_test.sthlp
 f ppmlhdfe_test.ado
+f ppmlhdfe_test.sthlp
 f popular_fix_test.ado
 f popular_fix_iv_test
