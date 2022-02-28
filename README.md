@@ -33,5 +33,5 @@ These estimation programs are complemented by testing programs : iOLS_delta_test
 
 Please feel free to contact me to report a bug or ask a question. 
 
-Note, this code is provided as is and may include potential errors.  It has been tested as for Stata version 16.
+Note, this code is provided as is and may include potential errors.  It has been tested for Stata version 16 but has also worked on Stata 14. 
 
