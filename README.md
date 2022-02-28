@@ -18,7 +18,7 @@ This repository includes code for iOLS_delta, i2SLS_delta, iOLS_MP as well as iO
 
 >ssc install ranktest
 
->net install gr0017.pkg
+>net install gr0017.pkg // This package may require installation "by hand" by searching "help gr0017".
 
 
 To install this code into Stata, run the following (requires at least Stata 14) : 
