@@ -52,7 +52,7 @@ quietly: _pctile `p_hat_temp', p(97.5)
 local w2=r(r2) 
 cap drop lambda_stat
 quietly: gen lambda_stat = (`E_u_hat')/`p_hat_temp' if `touse'
-quietly: reg  `lhs' lambda_stat if `dep_pos' & `touse' & inrange(`p_hat_temp',`w1',`w2') , nocons       	
+quietly: reg  `lhs' lambda_stat if `dep_pos' & `touse' & inrange(`p_hat_temp',0.001,1) , nocons       	
 	}	
 matrix b = e(b)
 local lambda = _b[lambda_stat]	
