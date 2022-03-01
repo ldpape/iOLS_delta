@@ -35,14 +35,12 @@ quietly:	xi: logit `dep_pos' `indepvar' `instr' `vlist1' if `touse'
 		quietly: reghdfe `dep_pos'  `indepvar' `instr'  if `touse' , absorb(`absorb') resid 
 		tempvar p_hat_temp
 		quietly: predict `p_hat_temp' if `touse', xbd
-		quietly: replace `p_hat_temp' = 0.001 if `p_hat_temp' < 0 & `touse'
-		quietly: replace `p_hat_temp' = 1-0.001 if `p_hat_temp' > 1 & `touse'
 	}
 
     cap drop lambda_stat
     quietly: gen lambda_stat = (`c_hat_temp'-log(`delta'))/`p_hat_temp' if `touse'
 	* regress
-	quietly: reg `lhs_temp' lambda_stat if `dep_pos' & `touse', nocons       
+	quietly: reg `lhs_temp' lambda_stat if `dep_pos' & `touse' & inrange(`p_hat_temp',0.001,1), nocons       
 	matrix b = e(b)
 	local lambda = _b[lambda_stat]	
 	cap drop lambda_stat	
