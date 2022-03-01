@@ -41,8 +41,8 @@ loc K = ceil(r(sum) / `tol' ^ 2)
 quietly: gen `w' = cond(`depvar', `K', 1)  if `touse'
 while 1 {
 	*qui reghdfe u [fw=w], absorb(id1 id2) resid(e)
-quietly:	reg `u' `_rhs' [fw=`w']  if `touse'
-quietly:	predict double `xb'  if `touse', xb
+	quietly: reghdfe `u' `_rhs' [fw=`w']  if `touse' , resid noabsorb 
+	quietly: predict double `xb'  if `touse', xbd
 quietly:	replace `xb' = 0 if (abs(`xb') < `tol')&(`touse')
 
 	* Stop once all predicted values become non-negative
