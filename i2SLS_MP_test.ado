@@ -46,13 +46,13 @@ quietly: reg  `lhs' lambda_stat if `dep_pos' & `touse', nocons
 	di in red "Using Royston & Cox (2005) multivariate nearest-neighbor smoother"
 tempvar p_hat_temp
 quietly: mrunning  `dep_pos'   `indepvar' `instr'  if `touse' , nograph predict(`p_hat_temp')
-quietly: _pctile `p_hat_temp', p(2.5)
-local w1=r(r1)
-quietly: _pctile `p_hat_temp', p(97.5)
-local w2=r(r2) 
+quietly: _pctile `p_hat_temp', p(10)
+local w1=max(r(r1),0.01)
+quietly: _pctile `p_hat_temp', p(90)
+local w2=max(r(r2),0.99) 
 cap drop lambda_stat
 quietly: gen lambda_stat = (`E_u_hat')/`p_hat_temp' if `touse'
-quietly: reg  `lhs' lambda_stat if `dep_pos' & `touse' & inrange(`p_hat_temp',0.001,1) , nocons       	
+quietly: reg  `lhs' lambda_stat if `dep_pos' & `touse' & inrange(`p_hat_temp',`w1',`w2') , nocons       	
 	}	
 matrix b = e(b)
 local lambda = _b[lambda_stat]	
