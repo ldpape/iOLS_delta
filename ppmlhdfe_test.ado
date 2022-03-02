@@ -41,7 +41,7 @@ quietly:	xi: logit `dep_pos' `indepvar' `vlist1' if `touse'
     cap drop lambda_stat
     quietly: gen lambda_stat = (`E_u_hat')/`p_hat_temp' if `touse'
 	* regress
-	quietly: reg `lhs' lambda_stat if `dep_pos' & `touse', nocons       
+	quietly: reg `lhs' lambda_stat if `dep_pos' & `touse' & & inrange(`p_hat_temp',0.001,1), nocons       
 	matrix b = e(b)
 	local lambda = _b[lambda_stat]	
 		cap drop lambda_stat
