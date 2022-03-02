@@ -1,6 +1,6 @@
 cap program drop popular_fix_iv_test
 program define popular_fix_iv_test, eclass 
-syntax varlist [if] [in] [aweight pweight fweight iweight] [, NONparametric  endog(varlist) instr(varlist) fix(real 1) ]   
+syntax varlist [if] [in] [aweight pweight fweight iweight] [, NONparametric excluded(varlist)  endog(varlist) instr(varlist) fix(real 1) ]   
 	marksample touse
 	local list_var `varlist'
 	* get depvar and indepvar
@@ -9,12 +9,12 @@ syntax varlist [if] [in] [aweight pweight fweight iweight] [, NONparametric  end
 	* lhs of test
 	tempvar dep_pos
 	quietly: gen `dep_pos' = `depvar'>0 if `touse'
-	quietly: reg `endog' `instr' `indepvar' if `dep_pos' & `touse'
+	quietly: reg `endog' `instr' `indepvar' `excluded' if `dep_pos' & `touse'
 	tempvar xb_hat 
 	quietly: predict `xb_hat' if `touse', xb
 	tempvar res
 	quietly: gen `res' = log(`fix'+`depvar') if `touse'
-	quietly: ivreg2 `res' `indepvar' ( `endog' = `instr' )  if `touse'    
+	quietly: ivreg2 `res' `indepvar' `excluded' ( `endog' = `instr' )  if `touse'    
 	matrix beta_hat = e(b)
 	matrix var_cov_beta_hat = e(V)
 	replace `endog' = `instr'
