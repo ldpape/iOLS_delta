@@ -1,6 +1,6 @@
 cap program drop iOLS_delta_test
 program define iOLS_delta_test, eclass 
-syntax varlist [if] [in] [aweight pweight fweight iweight] [, DELta(real 1) LIMit(real 1e-8) from(name)  xb_hat(varlist) u_hat(varlist)  MAXimum(real 10000) NONparametric]   
+syntax varlist [if] [in] [aweight pweight fweight iweight] [, DELta(real 1) LIMit(real 1e-8) from(name) excluded(varlist) xb_hat(varlist) u_hat(varlist)  MAXimum(real 10000) NONparametric]   
 	marksample touse
 	local list_var `varlist'
 	* get depvar and indepvar
@@ -19,7 +19,7 @@ if  "`xb_hat'" !="" {
      quietly: egen `c_hat_temp' = mean(`temp') if `touse'
 }
 else {
-quietly:  iOLS_delta `varlist' if `touse' , delta(`delta') limit(`limit') from(`from') maximum(`maximum')  
+quietly:  iOLS_delta `varlist' `excluded' if `touse' , delta(`delta') limit(`limit') from(`from') maximum(`maximum')  
 	quietly: replace `touse' = e(sample)
 	matrix beta_hat = e(b)
 	matrix var_cov_beta_hat = e(V)
