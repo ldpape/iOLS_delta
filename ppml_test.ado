@@ -1,11 +1,11 @@
 program define ppml_test, eclass 
-syntax varlist [if] [in] [aweight pweight fweight iweight] [, NONparametric] 
+syntax varlist [if] [in] [aweight pweight fweight iweight] [, NONparametric excluded(varlist) ] 
 	marksample touse
 	local list_var `varlist'
 	* get depvar and indepvar
 	gettoken depvar list_var : list_var
 	gettoken indepvar list_var : list_var, p("(")
-	quietly: ppml `varlist' if `touse'    
+	quietly: ppml `varlist' `excluded' if `touse'    
 	matrix beta_hat = e(b)
 	matrix var_cov_beta_hat = e(V)
 	quietly: replace `touse' = e(sample)
