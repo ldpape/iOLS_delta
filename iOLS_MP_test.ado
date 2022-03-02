@@ -1,6 +1,6 @@
 cap program drop iOLS_MP_test
 program define iOLS_MP_test, eclass 
-syntax varlist [if] [in] [aweight pweight fweight iweight] [, DELta(real 1) NONparametric LIMit(real 1e-8) from(name)  xb_hat(varlist) u_hat(varlist)  MAXimum(real 10000) Robust CLuster(string)]   
+syntax varlist [if] [in] [aweight pweight fweight iweight] [, DELta(real 1) excluded(varlist) NONparametric LIMit(real 1e-8) from(name)  xb_hat(varlist) u_hat(varlist)  MAXimum(real 10000) Robust CLuster(string)]   
 	marksample touse
 	local list_var `varlist'
 	* get depvar and indepvar
@@ -13,7 +13,7 @@ quietly: egen `E_u_hat' = mean(`u_hat') if `touse'
 quietly: gen `lhs_temp' = `u_hat'
      }
 else {
-  quietly: iOLS_MP `varlist' if `touse' , delta(`delta') limit(`limit') from(`from') maximum(`maximum')   
+  quietly: iOLS_MP `varlist' `excluded' if `touse' , delta(`delta') limit(`limit') from(`from') maximum(`maximum')   
   quietly: replace `touse' = e(sample)
 	matrix beta_hat = e(b)
 	matrix var_cov_beta_hat = e(V)
