@@ -1,6 +1,6 @@
 cap program drop i2SLS_MP_test
 program define i2SLS_MP_test, eclass 
-syntax varlist [if] [in] [aweight pweight fweight iweight] [, DELta(real 1) LIMit(real 1e-8) NONparametric from(name) endog(varlist) instr(varlist) xb_hat(varlist) u_hat(varlist)  MAXimum(real 10000) ]   
+syntax varlist [if] [in] [aweight pweight fweight iweight] [, DELta(real 1) LIMit(real 1e-8) NONparametric excluded(varlist) from(name) endog(varlist) instr(varlist) xb_hat(varlist) u_hat(varlist)  MAXimum(real 10000) ]   
 	marksample touse
 	local list_var `varlist'
 	* get depvar and indepvar
@@ -17,7 +17,7 @@ if  "`xb_hat'" !="" {
      quietly: gen `lhs' = `u_hat'
 		}
 else {
- i2SLS_MP `varlist' if `touse' , delta(`delta') limit(`limit') from(`from') maximum(`maximum')  endog(`endog') instr(`instr')
+ i2SLS_MP `varlist' `excluded' if `touse' , delta(`delta') limit(`limit') from(`from') maximum(`maximum')  endog(`endog') instr(`instr')
    quietly: iOLS_MP `varlist' if `touse' , delta(`delta') limit(`limit') from(`from') maximum(`maximum')   
   	quietly: replace `touse' = e(sample)
 	matrix beta_hat = e(b)
