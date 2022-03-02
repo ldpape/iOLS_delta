@@ -1,6 +1,6 @@
 cap program drop i2SLS_delta_test
 program define i2SLS_delta_test, eclass 
-syntax varlist [if] [in] [aweight pweight fweight iweight] [, DELta(real 1) NONparametric LIMit(real 1e-8) from(name) endog(varlist) instr(varlist) xb_hat(varlist) u_hat(varlist)  MAXimum(real 10000) ]   
+syntax varlist [if] [in] [aweight pweight fweight iweight] [, DELta(real 1) NONparametric excluded(varlist) LIMit(real 1e-8) from(name) endog(varlist) instr(varlist) xb_hat(varlist) u_hat(varlist)  MAXimum(real 10000) ]   
 	marksample touse
 	local list_var `varlist'
 	* get depvar and indepvar
@@ -16,7 +16,7 @@ if  "`xb_hat'" !="" {
      quietly: egen `c_hat_temp' = mean(`temp') if `touse'
 		}
 else {
-quietly:  i2SLS_delta `varlist' if `touse' , delta(`delta') limit(`limit') from(`from') maximum(`maximum') endog(`endog') instr(`instr') 
+quietly:  i2SLS_delta `varlist' `excluded' if `touse' , delta(`delta') limit(`limit') from(`from') maximum(`maximum') endog(`endog') instr(`instr') 
 	replace `touse' = e(sample)
 	matrix beta_hat = e(b)
 	matrix var_cov_beta_hat = e(V)
