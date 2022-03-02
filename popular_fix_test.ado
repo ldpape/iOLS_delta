@@ -1,6 +1,6 @@
 cap program drop popular_fix_test
 program define popular_fix_test, eclass 
-syntax varlist [if] [in] [aweight pweight fweight iweight]  [, NONparametric fix(real 1)]
+syntax varlist [if] [in] [aweight pweight fweight iweight]  [, NONparametric  excluded(varlist) fix(real 1)]
 	marksample touse
 	local list_var `varlist'
 	* get depvar and indepvar
@@ -8,7 +8,7 @@ syntax varlist [if] [in] [aweight pweight fweight iweight]  [, NONparametric fix
 	gettoken indepvar list_var : list_var, p("(")
 	tempvar res
 	quietly: gen `res' = log(`fix' +`depvar')
-	quietly: reg `res' `indepvar' if `touse'    
+	quietly: reg `res' `indepvar' `excluded' if `touse'    
 	matrix beta_hat = e(b)
 	matrix var_cov_beta_hat = e(V)
 	replace `touse' = e(sample)
