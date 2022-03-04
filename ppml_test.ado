@@ -9,17 +9,17 @@ syntax varlist [if] [in] [aweight pweight fweight iweight] [, NONparametric excl
 	matrix beta_hat = e(b)
 	matrix var_cov_beta_hat = e(V)
 	quietly: replace `touse' = e(sample)
-	tempvar xb_hat u_hat
+	tempvar xb_hat e_hat
 	quietly: predict `xb_hat', xb
-	quietly : gen `u_hat' = `depvar'*exp(-`xb_hat')
+	quietly : gen `e_hat' = `depvar' - exp(`xb_hat')
 	* lhs of test
 	tempvar dep_pos
 	quietly: gen `dep_pos' = `depvar'>0 if `touse'
 	* rhs of test
-tempvar E_u_hat
-quietly: egen `E_u_hat' = mean(`u_hat') if `touse'
+tempvar E_e_hat
+quietly: egen `E_e_hat' = mean(`e_hat') if `touse'
 tempvar lhs
-quietly: gen `lhs' = `u_hat'/exp(`xb_hat')
+quietly: gen `lhs' = `e_hat'
 
 ******************************************************************************
 *                            PROBABILITY MODEL 	            	     		 *
@@ -29,9 +29,13 @@ quietly: gen `lhs' = `u_hat'/exp(`xb_hat')
  quietly: logit `dep_pos' `indepvar' if `touse'  
 tempvar p_hat_temp
 quietly:predict `p_hat_temp' if `touse', pr 
+quietly: _pctile `p_hat_temp', p(10)
+local w1=max(r(r1),0)
+quietly: _pctile `p_hat_temp', p(90)
+local w2=min(r(r2),1)
 cap drop lambda_stat
-quietly: gen lambda_stat = (`E_u_hat')/`p_hat_temp' if `touse'
-quietly: reg `lhs'  lambda_stat if `dep_pos' & `touse', nocons 
+quietly: gen lambda_stat = (`E_u_hat')/`p_hat_temp' + ((1-`p_hat_temp')/`p_hat_temp')*exp(`xb_hat') if `touse'
+quietly: reg `lhs'  lambda_stat if `dep_pos' & `touse' & & inrange(`p_hat_temp',`w1',`w2'), nocons 
 	}
 	else{
 di in red "Using Royston & Cox (2005) multivariate nearest-neighbor smoother"
@@ -42,7 +46,7 @@ local w1=max(r(r1),0.01)
 quietly: _pctile `p_hat_temp', p(90)
 local w2=min(r(r2),0.99) 
 cap drop lambda_stat
-quietly: gen lambda_stat = (`E_u_hat')/`p_hat_temp' if `touse'
+quietly: gen lambda_stat = (`E_u_hat')/`p_hat_temp' + ((1-`p_hat_temp')/`p_hat_temp')*exp(`xb_hat') if `touse'
 quietly: reg `lhs'  lambda_stat if `dep_pos' & `touse' & inrange(`p_hat_temp',`w1',`w2') , nocons       	
 	}
 matrix b = e(b)
