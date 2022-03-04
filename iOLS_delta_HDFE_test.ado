@@ -30,18 +30,20 @@ foreach item of varlist `absorb' {
 quietly:	xi: logit `dep_pos' `indepvar' `vlist1' if `touse'
 	tempvar p_hat_temp
     quietly: predict `p_hat_temp' if `touse', pr 
+        quietly: gen lambda_stat = (`c_hat_temp'-log(`delta'))/`p_hat_temp' if `touse'
+	* regress
+	quietly: reg `lhs_temp' lambda_stat if `dep_pos' & `touse', nocons   
 	}
 	else{
 		quietly: reghdfe `dep_pos' `indepvar'  if `touse' , absorb(`absorb') resid 
 		tempvar p_hat_temp
 		quietly: predict `p_hat_temp' if `touse', xbd
-		
-	}
-
-   cap drop lambda_stat
+		   cap drop lambda_stat
     quietly: gen lambda_stat = (`c_hat_temp'-log(`delta'))/`p_hat_temp' if `touse'
 	* regress
-	quietly: reg `lhs_temp' lambda_stat if `dep_pos' & `touse'& inrange(`p_hat_temp',0.01,0.99), nocons       
+	quietly: reg `lhs_temp' lambda_stat if `dep_pos' & `touse'& inrange(`p_hat_temp',0.01,0.99), nocons    
+	}
+   
 	matrix b = e(b)
 	local lambda = _b[lambda_stat]	
 	cap drop lambda_stat	
