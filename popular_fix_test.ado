@@ -11,7 +11,7 @@ syntax varlist [if] [in] [aweight pweight fweight iweight]  [, NONparametric  ex
 	quietly: reg `res' `indepvar' `excluded' if `touse'    
 	matrix beta_hat = e(b)
 	matrix var_cov_beta_hat = e(V)
-	replace `touse' = e(sample)
+	quietly: replace `touse' = e(sample)
 	tempvar xb_hat u_hat
 	quietly : predict `u_hat' if `touse', resid 
 	quietly : predict `xb_hat' if `touse', xb 
