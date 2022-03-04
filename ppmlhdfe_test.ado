@@ -32,18 +32,18 @@ quietly:	xi: logit `dep_pos' `indepvar' `vlist1' if `touse'
 tempvar p_hat_temp
 quietly: predict `p_hat_temp' if `touse', pr 
 quietly: _pctile `p_hat_temp', p(10)
-local w1=max(r(r1),0)
+local w1=min(r(r1),0)
 quietly: _pctile `p_hat_temp', p(90)
-local w2=min(r(r2),1) 
+local w2=max(r(r2),1) 
  	}
 	else{
 quietly: reghdfe `dep_pos' `indepvar'  if `touse' , absorb(`absorb') resid 
 tempvar p_hat_temp
 quietly: predict `p_hat_temp' if `touse', xbd
 quietly: _pctile `p_hat_temp', p(10)
-local w1=max(r(r1),0.01)
+local w1=0.01
 quietly: _pctile `p_hat_temp', p(90)
-local w2=min(r(r2),0.99) 
+local w2=0.99
 	}
 	* regress
 	cap drop lambda_stat
