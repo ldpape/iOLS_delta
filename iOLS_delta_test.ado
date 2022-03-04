@@ -45,16 +45,20 @@ tempvar p_hat_temp
 quietly:predict `p_hat_temp' if `touse', pr 
 cap drop lambda_stat
 quietly: _pctile `p_hat_temp', p(10)
-local w1=max(r(r1),0)
+local w1=min(r(r1),0)
 quietly: _pctile `p_hat_temp', p(90)
-local w2=min(r(r2),1) 
+local w2=max(r(r2),1) 
 quietly: gen lambda_stat = (`c_hat_temp'-log(`delta'))/`p_hat_temp' if `touse'
 quietly: reg `lhs_temp' lambda_stat if `dep_pos' & `touse' & inrange(`p_hat_temp',`w1',`w2'), nocons 
 	}
 	else{
-	di in red "Using Royston & Cox (2005) multivariate nearest-neighbor smoother"
-tempvar p_hat_temp
-quietly: mrunning  `dep_pos'   `indepvar'  if `touse' , nograph predict(`p_hat_temp')
+	di in red "kNN Discrimination Probability Model"
+tempvar p_hat_temp p_hat_neg
+quietly: sum `touse' if `touse'
+local k = floor(sqrt(r(N)))
+quietly: discrim knn `indepvar' if `touse' , k(`k') group(`dep_pos') notable ties(nearest)   mahalanobis   priors(proportional) 
+quietly: predict `p_hat_neg' `p_hat_temp'  if `touse', pr
+*quietly: mrunning  `dep_pos'   `indepvar'  if `touse' , nograph predict(`p_hat_temp')
 quietly: _pctile `p_hat_temp', p(10)
 local w1=max(r(r1),0.01)
 quietly: _pctile `p_hat_temp', p(90)
