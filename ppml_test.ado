@@ -35,7 +35,7 @@ quietly: _pctile `p_hat_temp', p(90)
 local w2=min(r(r2),1)
 cap drop lambda_stat
 quietly: gen lambda_stat = (`E_e_hat')/`p_hat_temp' + ((1-`p_hat_temp')/`p_hat_temp')*exp(`xb_hat') if `touse'
-quietly: reg `lhs'  lambda_stat if `dep_pos' & `touse' & & inrange(`p_hat_temp',`w1',`w2'), nocons 
+quietly: reg `lhs'  lambda_stat if `dep_pos' & `touse' &  inrange(`p_hat_temp',`w1',`w2'), nocons 
 	}
 	else{
 di in red "Using Royston & Cox (2005) multivariate nearest-neighbor smoother"
