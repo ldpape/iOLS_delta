@@ -34,7 +34,7 @@ local w1=max(r(r1),0)
 quietly: _pctile `p_hat_temp', p(90)
 local w2=min(r(r2),1)
 cap drop lambda_stat
-quietly: gen lambda_stat = (`E_u_hat')/`p_hat_temp' + ((1-`p_hat_temp')/`p_hat_temp')*exp(`xb_hat') if `touse'
+quietly: gen lambda_stat = (`E_e_hat')/`p_hat_temp' + ((1-`p_hat_temp')/`p_hat_temp')*exp(`xb_hat') if `touse'
 quietly: reg `lhs'  lambda_stat if `dep_pos' & `touse' & & inrange(`p_hat_temp',`w1',`w2'), nocons 
 	}
 	else{
@@ -46,7 +46,7 @@ local w1=max(r(r1),0.01)
 quietly: _pctile `p_hat_temp', p(90)
 local w2=min(r(r2),0.99) 
 cap drop lambda_stat
-quietly: gen lambda_stat = (`E_u_hat')/`p_hat_temp' + ((1-`p_hat_temp')/`p_hat_temp')*exp(`xb_hat') if `touse'
+quietly: gen lambda_stat = (`E_e_hat')/`p_hat_temp' + ((1-`p_hat_temp')/`p_hat_temp')*exp(`xb_hat') if `touse'
 quietly: reg `lhs'  lambda_stat if `dep_pos' & `touse' & inrange(`p_hat_temp',`w1',`w2') , nocons       	
 	}
 matrix b = e(b)
