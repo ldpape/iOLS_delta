@@ -68,7 +68,7 @@ quietly: replace `touse'  = (`xb' <= 0) // & (`touse')
 	local exogenous `r(varlist)'
 	*** Initialisation de la boucle
 	tempvar y_tild 
-	quietly gen `y_tild' = log(`depvar' + `delta') if `touse'
+	quietly gen `y_tild' = log(`depvar' + 1) if `touse'
 	** prepare 2SLS
 	*local var_list  `endog' `indepvar' `cste'
 	*local instr_list `instr' `indepvar' `cste'
