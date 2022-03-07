@@ -63,7 +63,7 @@ quietly: replace `touse'  = (`xb' <= 0) // & (`touse')
 	local var_list `r(varlist)' 
 	*** prepare iOLS 
 	tempvar y_tild 
-	quietly gen `y_tild' = log(`depvar' + `delta') if `touse'
+	quietly gen `y_tild' = log(`depvar' + 1) if `touse'
 	*** Initialisation de la boucle
 	mata : X=.
 	mata : y_tilde =.
