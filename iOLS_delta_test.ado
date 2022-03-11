@@ -59,10 +59,10 @@ local k = floor(sqrt(r(N)))
 quietly: discrim knn `indepvar' if `touse' , k(`k') group(`dep_pos') notable ties(nearest)   mahalanobis   priors(proportional) 
 quietly: predict `p_hat_neg' `p_hat_temp'  if `touse', pr
 *quietly: mrunning  `dep_pos'   `indepvar'  if `touse' , nograph predict(`p_hat_temp')
-quietly: _pctile `p_hat_temp', p(10)
-local w1=max(r(r1),0.01)
-quietly: _pctile `p_hat_temp', p(90)
-local w2=min(r(r2),0.99) 
+quietly: _pctile `p_hat_temp', p(5)
+local w1=max(r(r1),1e-5)
+quietly: _pctile `p_hat_temp', p(95)
+local w2=min(r(r2),1) 
 cap drop lambda_stat
 quietly: gen lambda_stat = (`c_hat_temp'-log(`delta'))/`p_hat_temp' if `touse'
 quietly: reg `lhs_temp' lambda_stat if `dep_pos' & `touse' & inrange(`p_hat_temp',`w1',`w2') , nocons       	
