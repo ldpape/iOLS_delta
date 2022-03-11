@@ -1,6 +1,6 @@
 cap program drop popular_fix_iv_test
 program define popular_fix_iv_test, eclass 
-syntax varlist [if] [in] [aweight pweight fweight iweight] [, NONparametric excluded(varlist)  endog(varlist) instr(varlist) fix(real 1) ]   
+syntax varlist [if] [in] [aweight pweight fweight iweight] [, NONparametric excluded(varlist) k(real 1) endog(varlist) instr(varlist) fix(real 1) ]   
 	marksample touse
 	local list_var `varlist'
 	* get depvar and indepvar
@@ -49,7 +49,9 @@ local w2=min(r(r2),0.99)
 di in red "kNN Discrimination Probability Model"
 tempvar p_hat_temp p_hat_neg
 quietly: sum `touse' if `touse'
-local k = floor(sqrt(r(N)))
+if `k'==1 {
+local k = floor(sqrt(r(N))) 
+}
 quietly: discrim knn `indepvar' if `touse' , k(`k') group(`dep_pos') notable ties(nearest)   mahalanobis   priors(proportional) 
 quietly: predict `p_hat_neg' `p_hat_temp'  if `touse', pr
 quietly: _pctile `p_hat_temp', p(5)
