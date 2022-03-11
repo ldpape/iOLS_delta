@@ -58,7 +58,7 @@ quietly: sum `touse' if `touse'
 if `k'==1 {
 local k = floor(sqrt(r(N))) 
 }
-quietly: discrim knn `indepvar' `instr' if `touse' , k(`k') group(`dep_pos') notable ties(nearest)   mahalanobis   priors(proportional) 
+quietly: discrim knn `indepvar' `instr' if `touse' , k(`k') group(`dep_pos') notable ties(nearest)      priors(proportional) 
 quietly: predict `p_hat_neg' `p_hat_temp'  if `touse', pr
 *quietly: mrunning  `dep_pos'   `indepvar'  if `touse' , nograph predict(`p_hat_temp')
 quietly: _pctile `p_hat_temp', p(5)
