@@ -11,7 +11,7 @@ syntax varlist [if] [in] [aweight pweight fweight iweight] [,   absorb(varlist) 
 	tempvar xb_temp e_hat_temp E_e_hat
 	quietly:  predict `xb_temp', xb 
 	quietly: replace `xb_temp' = `xb_temp' + _ppmlhdfe_d
-   quietly: gen `e_hat_temp' = `depvar'-exp(`xb_temp')
+   quietly: gen `e_hat_temp' = `depvar'/exp(`xb_temp')
    quietly: egen `E_e_hat' = mean(`e_hat_temp' ) if `touse'
 //	matrix beta_hat = e(b)
 //	matrix var_cov_beta_hat = e(V)
@@ -40,14 +40,16 @@ local w2=max(r(r2),1)
 quietly: reghdfe `dep_pos' `indepvar'  if `touse' , absorb(`absorb') resid 
 tempvar p_hat_temp
 quietly: predict `p_hat_temp' if `touse', xbd
-quietly: _pctile `p_hat_temp', p(10)
-local w1=0.01
-quietly: _pctile `p_hat_temp', p(90)
-local w2=0.99
+*quietly: _pctile `p_hat_temp', p(10)
+local w1=1e-5
+*quietly: _pctile `p_hat_temp', p(90)
+local w2=1
 	}
 	* regress
 	cap drop lambda_stat
-	quietly: gen lambda_stat = (`E_e_hat')/`p_hat_temp' + ((1-`p_hat_temp')/`p_hat_temp')*exp(`xb_temp') if `touse'
+*	quietly: gen lambda_stat = (`E_e_hat')/`p_hat_temp' + ((1-`p_hat_temp')/`p_hat_temp')*exp(`xb_temp') if `touse'
+	quietly: gen lambda_stat = (`E_e_hat')/`p_hat_temp'  if `touse'
+
 	quietly: reg `lhs' lambda_stat if `dep_pos' & `touse' & inrange(`p_hat_temp',`w1',`w2'), nocons       
 	matrix b = e(b)
 	local lambda = _b[lambda_stat]	
