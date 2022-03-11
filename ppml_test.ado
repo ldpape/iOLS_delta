@@ -11,7 +11,7 @@ syntax varlist [if] [in] [aweight pweight fweight iweight] [, NONparametric excl
 	quietly: replace `touse' = e(sample)
 	tempvar xb_hat e_hat
 	quietly: predict `xb_hat', xb
-	quietly : gen `e_hat' = `depvar' - exp(`xb_hat')
+	quietly : gen `e_hat' = `depvar'/exp(`xb_hat')
 	* lhs of test
 	tempvar dep_pos
 	quietly: gen `dep_pos' = `depvar'>0 if `touse'
@@ -34,7 +34,8 @@ local w1=min(r(r1),0)
 quietly: _pctile `p_hat_temp', p(90)
 local w2=max(r(r2),1)
 cap drop lambda_stat
-quietly: gen lambda_stat = (`E_e_hat')/`p_hat_temp' + ((1-`p_hat_temp')/`p_hat_temp')*exp(`xb_hat') if `touse'
+*quietly: gen lambda_stat = (`E_e_hat')/`p_hat_temp' + ((1-`p_hat_temp')/`p_hat_temp')*exp(`xb_hat') if `touse'
+quietly: gen lambda_stat = (`E_e_hat')/`p_hat_temp'  if `touse'
 quietly: reg `lhs'  lambda_stat if `dep_pos' & `touse' &  inrange(`p_hat_temp',`w1',`w2'), nocons 
 	}
 	else{
@@ -55,12 +56,13 @@ local k = floor(sqrt(r(N)))
 quietly: discrim knn `indepvar' if `touse' , k(`k') group(`dep_pos') notable ties(nearest)   mahalanobis   priors(proportional) 
 quietly: predict `p_hat_neg' `p_hat_temp'  if `touse', pr
 *quietly: mrunning  `dep_pos'   `indepvar'  if `touse' , nograph predict(`p_hat_temp')
-quietly: _pctile `p_hat_temp', p(10)
-local w1=max(r(r1),0.01)
-quietly: _pctile `p_hat_temp', p(90)
-local w2=min(r(r2),0.99) 
+quietly: _pctile `p_hat_temp', p(5)
+local w1=max(r(r1),1e-5)
+quietly: _pctile `p_hat_temp', p(95)
+local w2=min(r(r2),1) 
 cap drop lambda_stat
-quietly: gen lambda_stat = (`E_e_hat')/`p_hat_temp' + ((1-`p_hat_temp')/`p_hat_temp')*exp(`xb_hat') if `touse'
+*quietly: gen lambda_stat = (`E_e_hat')/`p_hat_temp' + ((1-`p_hat_temp')/`p_hat_temp')*exp(`xb_hat') if `touse'
+quietly: gen lambda_stat = (`E_e_hat')/`p_hat_temp'  if `touse'
 quietly: reg `lhs'  lambda_stat if `dep_pos' & `touse' & inrange(`p_hat_temp',`w1',`w2') , nocons       	
 	}
 matrix b = e(b)
