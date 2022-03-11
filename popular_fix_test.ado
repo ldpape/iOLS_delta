@@ -51,7 +51,7 @@ quietly: predict `p_hat_neg' `p_hat_temp'  if `touse', pr
 quietly: _pctile `p_hat_temp', p(5)
 local w1=max(r(r1),1e-5)
 quietly: _pctile `p_hat_temp', p(95)
-local w2=min(r(r2),1) 
+local w2=min(r(r1),1) 
 cap drop lambda_stat
 quietly: gen lambda_stat = `xb_hat'*(1-`p_hat_temp')/`p_hat_temp' if `touse'
 quietly: reg `u_hat' lambda_stat if `dep_pos' & `touse' & inrange(`p_hat_temp',`w1',`w2'), nocons       	
