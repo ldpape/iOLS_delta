@@ -81,6 +81,7 @@ if r(k_omitted) >0 di
 	quietly gen `y_tild' = log(`depvar' + `delta') if `touse'
 	quietly	hdfe `y_tild'  if `touse' [`weight'] , absorb(`absorb') generate(Y0_) 
 	local df_a = e(df_a)
+	local dof_hdfe = e(df_a)
 	mata : X=.
 	mata : PX=.
 	mata : PZ=.
@@ -102,7 +103,6 @@ if r(k_omitted) >0 di
 	quietly gen `y_tild' = log(`depvar' + `delta') if `touse'
 	quietly	hdfe `y_tild'  if `touse'  [`weight'] , absorb(`absorb') generate(Y0_) 
 	local df_a = e(df_a)
-
 	local dof_hdfe = e(df_a)
 	mata : X=.
 	mata : PX=.
@@ -212,9 +212,6 @@ di "Convergence may be slow : consider using another delta"
 	}
 cap _crcslbl Y0_ `depvar' // label Y0 correctly
 quietly: ivreg2 Y0_ `alt_varlist' (`endog' = `instr') [`weight'`exp'] if `touse' , `option' noconstant   // standard case with X and FE 
-if "`alt_varlist'"=="" {
-quietly: ivreg2 Y0_ `alt_varlist' (`endog' = `instr') [`weight'`exp'] if `touse'  , `option' noconstant   // case with no X , only FE 
-}
 local df_r = e(Fdf2) - `df_a'
  	if "`cluster'" !="" {
  local df_r = e(Fdf2)
