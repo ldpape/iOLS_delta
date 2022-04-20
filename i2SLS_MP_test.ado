@@ -18,7 +18,7 @@ if  "`xb_hat'" !="" {
 		}
 else {
  i2SLS_MP `varlist' `excluded' if `touse' , delta(`delta') limit(`limit') from(`from') maximum(`maximum')  endog(`endog') instr(`instr')
-   quietly: iOLS_MP `varlist' if `touse' , delta(`delta') limit(`limit') from(`from') maximum(`maximum')   
+%   quietly: iOLS_MP `varlist' if `touse' , delta(`delta') limit(`limit') from(`from') maximum(`maximum')   
   	quietly: replace `touse' = e(sample)
 	matrix beta_hat = e(b)
 	matrix var_cov_beta_hat = e(V)
