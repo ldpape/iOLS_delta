@@ -49,8 +49,8 @@
 {synopthdr}
 {synoptline}
 {syntab: Probability Model}
-{synopt:{opt nonparametric}} If this option is added, the command estimates the probability model using the multivariate nearest-neighbor smoother of {browse "https://journals.sagepub.com/doi/abs/10.1177/1536867X0500500309":Royston & Cox (2005)}.
- Without this option, the program estimates a logistic probability model. {p_end}
+{synopt:{opt nonparametric}} If this option is added, the command estimates the probability model using Stata's kNN estimator. To use, say, 40 neighbors, add option "k(40)". Otherwise, the program uses sqrt(N).
+Without this option, the program estimates a logistic probability model. {p_end}
 
 
 {marker authors}{...}
