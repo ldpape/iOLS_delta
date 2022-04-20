@@ -8,12 +8,12 @@
 * 03/02 : drop singleton using Correia, Zylkin and Guimaraes method
 * 04/02 : warm starting point
 * 07/02 : degrees of freedom in ereturn
-* 20/04 :  quiet the collinearity 
+* 20/04 :  quiet the collinearity + SHOW option
 cap program drop i2SLS_MP
 program define i2SLS_MP, eclass
 //syntax anything(fv ts numeric) [if] [in] [aweight pweight fweight iweight]  [, DELta(real 1) LIMit(real 0.00001) MAXimum(real 1000) Robust CLuster(string)  ]
 
-syntax varlist [if] [in] [aweight pweight fweight iweight] [, DELta(real 1) from(name) endog(varlist) instr(varlist) LIMit(real 1e-8)   MAXimum(real 10000) Robust CLuster(string)]           
+syntax varlist [if] [in] [aweight pweight fweight iweight] [, DELta(real 1) from(name) endog(varlist) instr(varlist) LIMit(real 1e-8)   MAXimum(real 10000) SHOW Robust CLuster(string)]           
 
 marksample touse   
 markout `touse'  `cluster', s  
@@ -123,6 +123,9 @@ else {
 	mata: criteria = mean(abs(beta_initial - beta_new):^(2))
 mata: st_numscalar("eps", criteria)
 mata: st_local("eps", strofreal(criteria))
+if  "`show'" !="" {
+di "Current average coef. change: " "`eps'"
+}
 		* safeguard for convergence.
 	if `k'==`maximum'{
 		  di "There has been no convergence so far: increase the number of iterations."  
