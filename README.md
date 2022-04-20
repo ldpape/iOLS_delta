@@ -4,7 +4,7 @@ This repository includes code for iOLS_delta, i2SLS_delta, iOLS_MP as well as iO
 
 >ssc install hdfe
 
->ssc install reghdfe
+>ssc install reghdfe  // If an error appears, try downloading the more recent version from http://scorreia.com/software/reghdfe/install.html
 
 >ssc install moremata
 
