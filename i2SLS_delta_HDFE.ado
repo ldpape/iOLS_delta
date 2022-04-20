@@ -7,12 +7,13 @@
 * 21/01/2022 : added symmetrization + check for singleton / existence using PPML + correction S.E. + syntax change
 * 22/01/2022 : apparently, new syntax does not drop missing obs.
 *3/2/2022 : drop preserve + add singleton selection based on Correia, Zylkin and Guimaraes.
+* 20/4/2022 : quietly collinearity + SHOW option 
 cap program drop i2SLS_delta_HDFE
 program define i2SLS_delta_HDFE, eclass
 
 syntax varlist [if] [in] [aweight pweight fweight iweight] [, DELta(real 1) ABSorb(varlist) LIMit(real 1e-8) from(name)  MAXimum(real 10000) ENDog(varlist) INSTR(varlist)  Robust CLuster(string)]              
 
-//	syntax [anything] [if] [in] [aweight pweight fweight iweight]  [, DELta(real 1) ABSorb(varlist) LIMit(real 0.00001) MAXimum(real 1000) Robust CLuster(varlist numeric) ]
+//	syntax [anything] [if] [in] [aweight pweight fweight iweight]  [, DELta(real 1) ABSorb(varlist) LIMit(real 0.00001) MAXimum(real 1000) SHOW Robust CLuster(varlist numeric) ]
 	marksample touse
 	markout `touse'  `cluster', s     
 	quietly keep if `touse'
@@ -62,7 +63,7 @@ quietly: replace `touse'  = (`xb' <= 0) // & (`touse')
 	** drop collinear variables
 	tempvar cste
 	gen `cste' = 1
-    _rmcoll `_rhs' `endog' `cste' if `touse' , forcedrop 
+ quietly:   _rmcoll `_rhs' `endog' `cste' if `touse' , forcedrop 
 if r(k_omitted) >0 di 
 	local alt_varlist `r(varlist)'
 	local alt_varlist: list alt_varlist- endog
@@ -157,6 +158,9 @@ else {
 	mata: criteria = mean(abs(beta_initial - beta_new):^(2))
 	mata: st_numscalar("eps", criteria)
 	mata: st_local("eps", strofreal(criteria))
+	if  "`show'" !="" {
+di "Current average coef. change: " "`eps'"
+}
 		* safeguard for convergence.
 	if `k'==`maximum'{
 		  di "There has been no convergence so far: increase the number of iterations."  
