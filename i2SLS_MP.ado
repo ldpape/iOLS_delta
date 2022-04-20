@@ -8,11 +8,12 @@
 * 03/02 : drop singleton using Correia, Zylkin and Guimaraes method
 * 04/02 : warm starting point
 * 07/02 : degrees of freedom in ereturn
+* 20/04 : show iteration options, quiet the collinearity 
 cap program drop i2SLS_MP
 program define i2SLS_MP, eclass
 //syntax anything(fv ts numeric) [if] [in] [aweight pweight fweight iweight]  [, DELta(real 1) LIMit(real 0.00001) MAXimum(real 1000) Robust CLuster(string)  ]
 
-syntax varlist [if] [in] [aweight pweight fweight iweight] [, DELta(real 1) from(name) endog(varlist) instr(varlist) LIMit(real 1e-8)  MAXimum(real 10000) Robust CLuster(string)]           
+syntax varlist [if] [in] [aweight pweight fweight iweight] [, DELta(real 1) from(name) endog(varlist) instr(varlist) LIMit(real 1e-8) SHOW  MAXimum(real 10000) Robust CLuster(string)]           
 
 marksample touse   
 markout `touse'  `cluster', s  
@@ -64,7 +65,7 @@ quietly: replace `touse'  = (`xb' <= 0) // & (`touse')
 ** drop collinear variables
 	tempvar cste
 	gen `cste' = 1
-    _rmcoll `_rhs' `cste' if `touse', forcedrop 
+ quietly:   _rmcoll `_rhs' `cste' if `touse', forcedrop 
 	local var_list `endog' `r(varlist)' `cste'  
 	local instr_list `instr' `r(varlist)' `cste' 
 	local exogenous `r(varlist)'
