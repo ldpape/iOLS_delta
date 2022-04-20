@@ -49,7 +49,7 @@
 {synopthdr}
 {synoptline}
 {syntab: Probability Model}
-{synopt:{opt nonparametric}} If this option is added, the command estimates the probability model using the multivariate nearest-neighbor smoother of {browse "https://journals.sagepub.com/doi/abs/10.1177/1536867X0500500309":Royston & Cox (2005)}.
+{synopt:{opt nonparametric}} If this option is added, the command estimates the probability model using Stata's kNN estimator. To use, say, 40 neighbors, add option "k(40)". Otherwise, the program uses sqrt(N).
  Without this option, the program estimates a logistic probability model. {p_end}
 {syntab: Convergence}
 {synopt:{opt limit}{cmd:(}{help iOLS_MP##limit:limit}{cmd:)}} Choose convergence criteria in terms of mean squared difference between two set of paramter estimates between two iterations. Set to 1e-8 if unspecified. {p_end}
