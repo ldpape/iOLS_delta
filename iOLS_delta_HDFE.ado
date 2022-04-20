@@ -6,9 +6,10 @@
 * 04/01/2022 : added constant + checks for convergence
 * 01/02/2022 : drop preserve + post estimation variables
 * 04/02/2022 : warm starting point + Correia, Zylkin and Guimarares singleton check
+* 20/4/2022 : quiet collinearity + SHOW
 cap program drop iOLS_delta_HDFE
 program define iOLS_delta_HDFE, eclass 
-syntax varlist [if] [in] [aweight pweight fweight iweight] [, DELta(real 1) LIMit(real 1e-8) from(name)  MAXimum(real 10000) ABSorb(string)  Robust CLuster(string)]        
+syntax varlist [if] [in] [aweight pweight fweight iweight] [, DELta(real 1) LIMit(real 1e-8) from(name)  MAXimum(real 10000) ABSorb(string) SHOW  Robust CLuster(string)]        
 
 //	syntax [anything] [if] [in] [aweight pweight fweight iweight] [, DELta(real 1)  ABSorb(string) LIMit(real 0.00001) MAXimum(real 1000) Robust CLuster(varlist numeric)]
 	marksample touse
@@ -126,6 +127,9 @@ else {
 	mata: criteria = mean(abs(beta_initial - beta_new):^(2))
 	mata: st_numscalar("eps", criteria)
 	mata: st_local("eps", strofreal(criteria))
+	if  "`show'" !="" {
+di "Current average coef. change: " "`eps'"
+}
 		* safeguard for convergence.
 	if `k'==`maximum'{
 		  di "There has been no convergence so far: increase the number of iterations."  
