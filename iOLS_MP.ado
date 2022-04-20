@@ -5,15 +5,16 @@
 ** 14/12/2021 : Changed the constant calculation to avoid numerical log(0).
 ** 21/12/2021 : Updated to matrix form for speed and options to control convergence.
 ** 04/01/2021 : Add additional stopping criteria + return of the constant alpha.
-** 20/01/2021 : Corrected S.E. for symmetrization & Added PPML Singleton & Separation drop.
-** 01/02/2021 : Drop "preserve" to gain speed & postestimation
-** 03/02/2021 : Check Singleton using Sergio Correia, Zylkin and Guimarães method.
-** 04/02/2021 : Warm starting point modification
-** 05/ 02 / 2021 : add dof as ereturn. 
+** 20/01/2022 : Corrected S.E. for symmetrization & Added PPML Singleton & Separation drop.
+** 01/02/2022 : Drop "preserve" to gain speed & postestimation
+** 03/02/2022 : Check Singleton using Sergio Correia, Zylkin and Guimarães method.
+** 04/02/2022 : Warm starting point modification
+** 05/ 02 / 2022 : add dof as ereturn. 
+** 20/4/2022 : SHOW + quietly collinearity
 cap program drop iOLS_MP
 program define iOLS_MP, eclass 
 //	syntax [anything] [if] [in] [aweight pweight fweight iweight] [, DELta(real 1) Robust LIMit(real 0.00001) MAXimum(real 1000) CLuster(varlist numeric)]
-syntax varlist [if] [in] [aweight pweight fweight iweight] [, DELta(real 1) LIMit(real 1e-8) from(name) MAXimum(real 10000) Robust CLuster(string)]        
+syntax varlist [if] [in] [aweight pweight fweight iweight] [, DELta(real 1) LIMit(real 1e-8) from(name) MAXimum(real 10000) SHOW Robust CLuster(string)]        
 
 	marksample touse
 	markout `touse'  `cluster', s     
@@ -62,7 +63,7 @@ quietly: replace `touse'  = (`xb' <= 0) // & (`touse')
 	** drop collinear variables
 	tempvar cste
 	gen `cste' = 1
-    _rmcoll `_rhs' `cste' if `touse', forcedrop 
+ quietly:   _rmcoll `_rhs' `cste' if `touse', forcedrop 
 	local var_list `r(varlist)' 
 	*** prepare iOLS 
 	tempvar y_tild 
@@ -113,6 +114,9 @@ else {
 	mata: criteria = mean(abs(beta_initial - beta_new):^(2))
 mata: st_numscalar("eps", criteria)
 mata: st_local("eps", strofreal(criteria))
+if  "`show'" !="" {
+di "Current average coef. change: " "`eps'"
+}
 		* safeguard for convergence.
 	if `k'==`maximum'{
 		  di "There has been no convergence so far: increase the number of iterations."  
